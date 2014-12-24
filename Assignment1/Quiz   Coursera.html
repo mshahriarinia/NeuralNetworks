@@ -1,0 +1,490 @@
+<!DOCTYPE html><html xmlns:fb="http://ogp.me/ns/fb#" itemtype="http://schema.org"><head><meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=IE7"><meta name="fragment" content="!"><meta name="robots" content="NOODP"><meta charset="utf-8"><meta property="og:title" content="Coursera"><meta property="og:type" content="website"><meta property="og:image" content="http://s3.amazonaws.com/coursera/media/Coursera_Computer_Narrow.png"><meta property="og:url" content="https://www.coursera.org/"><meta property="og:site_name" content="Coursera"><meta property="og:locale" content="en_US"><meta property="og:description" content="Take free online classes from 80+ top universities and organizations. Coursera is a social entrepreneurship company partnering with Stanford University, Yale University, Princeton University and others around the world to offer courses online for anyone to take, for free. We believe in connecting people to a great education so that anyone around the world can learn without limits."><meta property="fb:admins" content="727836538,4807654"><meta property="fb:app_id" content="274998519252278"><meta name="twitter:site" content="Coursera"><meta name="twitter:app:name:iphone" content="Coursera"><meta name="twitter:app:name:ipad" content="Coursera"><meta name="twitter:app:name:googleplay" content="Coursera"><meta name="twitter:app:id:iphone" content="id736535961"><meta name="twitter:app:id:ipad" content="id736535961"><meta name="twitter:app:id:googleplay" content="org.coursera.android"><meta name="description" content="Take free online classes from 80+ top universities and organizations. Coursera is a social entrepreneurship company partnering with Stanford University, Yale University, Princeton University and others around the world to offer courses online for anyone to take, for free. We believe in connecting people to a great education so that anyone around the world can learn without limits."><meta name="image" content="http://s3.amazonaws.com/coursera/media/Coursera_Computer_Narrow.png"><meta name="apple-itunes-app" content="app-id=736535961"><title>Quiz | Coursera</title>    <link href='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/css/spark.main.css' rel='stylesheet' type='text/css' >
+      <link href='https://www.coursera.org/maestro/api/course/256/course.css' rel='stylesheet' type='text/css' >
+    <link href='https://spark-public.s3.amazonaws.com/neuralnets/static/images/favicon.ico' rel='icon' >
+</head><body><div id="fb-root"></div><div id="spark-help" class="hide"><div data-helpwidget data-helpwidget-link-help="http://support.coursera.org" data-helpwidget-link-discuss="http://class.coursera.org/mooc/" data-helpwidget-link-filter="coursera-admin-helpwidget-link" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" class="helpwidget-tab">Admin Help</div></div><a href="https://courserahelp.zendesk.com/hc/requests/new" target="_blank"><div style="z-index: 1" data-networkprioritysupportwidget role="button" class="helpwidget-tab hide">Premium Support</div></a><div id="spark" class="hide">
+
+<h2 class="course-page-header">
+  <span>
+Programming Assignment 1: The perceptron learning algorithm.  </span>
+  
+  <a class="coursera-reporter-link" title="Click here if you're experiencing technical problems or found errors in the course materials." target="_blank" href="https://class.coursera.org/neuralnets-2012-001/help/quizzes?url=https%3A%2F%2Fclass.coursera.org%2Fneuralnets-2012-001%2Fquiz%2Fattempt%3Fquiz_id%3D69">
+     Help
+  </a>
+</h2>
+
+
+<a data-coursera-admin-helpwidget-link rel="help" href="https://class.coursera.org/mooc/help/quiz" title="Quiz documentation" style="display:none;">Learn more</a>
+
+<div class="course-quiz-attempt-warning-message alert alert-error">
+    <p><strong>Warning: </strong> The hard deadline has passed. You can attempt it, but  <b>you will not get credit for it</b>.  You are welcome to try it as a learning exercise.</p>
+</div>
+
+
+
+
+
+
+
+
+
+            <form method="post" id="quiz_form" accept-charset="UTF-8">
+    
+        <div class="course-quiz-preamble">
+        <p><b>DISCLAIMER:</b> Before beginning the actual quiz portion of the assignment, download the code and fill in the missing pieces. You do not have to submit the quiz until the deadline.</p>
+<p>In this assignment you will take the provided starter code and fill in the missing details in order to create a working perceptron implementation.</p>
+
+<p>To start, download the following code files:
+<ul>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/learn_perceptron.m">learn_perceptron.m</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/plot_perceptron.m">plot_perceptron.m</a></li>
+</ul></p>
+<p>And the following datasets:
+<ul>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset1.mat">dataset1.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset2.mat">dataset2.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset3.mat">dataset3.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset4.mat">dataset4.mat</a></li>
+</ul></p>
+
+<p><b>Attention:</b> some people have notified us that the provided datasets do not load under some versions of Octave. We are providing the <i>same</i> datasets in a different format that will hopefully work with more versions. You can find these files below.</p>
+
+<p>And the following datasets:
+<ul>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset1_ancient_octave.mat">dataset1_ancient_octave.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset2_ancient_octave.mat">dataset2_ancient_octave.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset3_ancient_octave.mat">dataset3_ancient_octave.mat</a></li>
+<li><a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Datasets/dataset4_ancient_octave.mat">dataset4_ancient_octave.mat</a></li>
+</ul></p>
+
+<p>For those who want to download all of the files together in a zip archive, you get get them here: <a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/Assignment1.zip">Assignment1.zip</a></p>
+
+<p>To run the code, you first need to load a dataset. To do so enter the following command in the Octave console (to load dataset 1):</p>
+
+<p><b>load dataset1</b></p>
+
+<p>This should load 4 variables:
+<ui>
+<li>neg_examples_nobias - The matrix containing the examples belonging to class 0.</li>
+<li>pos_examples_nobias - The matrix containing the examples belonging to class 1.</li>
+<li>w_init - Some initial weight vector.</li>
+<li>w_gen_feas - A generously feasible weight vector (empty if one doesn't exist).</li>
+</ui></p>
+
+<p>The variables have _nobias appended to their names because they do not have an additional column of 1's appended to them. This is done automatically in the learn_perceptron.m code already. Now that you have loaded a dataset, you can run the algorithm by entering the following at the Octave console:</p>
+
+<p><b>w = learn_perceptron(neg_examples_nobias,pos_examples_nobias,w_init,w_gen_feas)</b></p>
+
+<p>This will start the algorithm and plot the results as it proceeds. Until the algorithm converges you can keep pressing enter to run the next iteration. Pressing 'q' will terminate the program. At each iteration it should produce a plot that looks something <a href="http://spark-public.s3.amazonaws.com/neuralnets/Programming%20Assignments/Programming%20Assignment%201/As1Screen.png">like this</a>.</p>
+
+<p>The top left plot shows the data points. The circles represent one class while the squares represent the other. The line shows the decision boundary of the perceptron using the current set of weights. The green examples are those that are correctly classified while the red are incorrectly classified. The top-right plot will show the number of mistakes made by the perceptron. If a generously feasible weight vector is provided (and not empty), then the bottom left plot will show the distance of the learned weight vectors to the generously feasible weight vector.</p>
+
+<p>Currently, the code doesn't do any learning. It is your job to fill this part in. Specifically, you need to fill in the lines under learn_perceptron.m marked %YOUR CODE HERE (lines 114 and 122). When you are finished, use this program to help you answer the questions below.</p>    </div>
+    
+            
+<div class="course-quiz-honor-code">
+    <label class="checkbox">
+        <input type="checkbox">
+        In accordance with the Coursera Honor Code, I (mor) certify that the answers here are my own work.        <span class="course-quiz-honor-code-thanks" style="display:none;">Thank you!</span>
+    </label>
+
+</div>
+    
+    <div class="course-quiz-question-body">
+<h3 class="course-quiz-question-number">Question 1</h3>
+<div dir="auto" class="course-quiz-question-text">Which of the provided datasets are linearly separable? Check all that apply.</div>
+<div dir="auto" class="course-quiz-options">
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="checkbox" name="answer[a670f7b85c779b5821e4a1f32c358db4][]" id="gensym_549ada1544030" value="b9a546af639393810960cc8690df0114"><label for="gensym_549ada1544030" style="cursor:pointer;">Dataset 1</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="checkbox" name="answer[a670f7b85c779b5821e4a1f32c358db4][]" id="gensym_549ada1548a54" value="6f89d9d8a951daac1953a8f347f40127"><label for="gensym_549ada1548a54" style="cursor:pointer;">Dataset 2</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="checkbox" name="answer[a670f7b85c779b5821e4a1f32c358db4][]" id="gensym_549ada154d4fc" value="c657f213b8e063aebb873de5d3bcb30a"><label for="gensym_549ada154d4fc" style="cursor:pointer;">Dataset 3</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="checkbox" name="answer[a670f7b85c779b5821e4a1f32c358db4][]" id="gensym_549ada1551f88" value="c4e39a1c278b0c48a31103c82155c1eb"><label for="gensym_549ada1551f88" style="cursor:pointer;">Dataset 4</label>
+</div>
+</div>
+</div><div class="course-quiz-question-body">
+<h3 class="course-quiz-question-number">Question 2</h3>
+<div dir="auto" class="course-quiz-question-text">True or false: if the dataset is linearly separable, then it is possible for the number of classification errors to <i>increase</i> during learning.</div>
+<div dir="auto" class="course-quiz-options">
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[8efaeb649f17ed080b04bf406fb77618][]" id="gensym_549ada1561425" value="fc32c38ee84274c54172b5ada6ceffa9"><label for="gensym_549ada1561425" style="cursor:pointer;">True</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[8efaeb649f17ed080b04bf406fb77618][]" id="gensym_549ada1564271" value="c237f2071ef4010bb08f67abe5be131c"><label for="gensym_549ada1564271" style="cursor:pointer;">False</label>
+</div>
+</div>
+</div><div class="course-quiz-question-body">
+<h3 class="course-quiz-question-number">Question 3</h3>
+<div dir="auto" class="course-quiz-question-text">True or false: If a generously feasible region exists, then the distance between the current weight vector and any weight vector in the <i>feasible</i> region will monotonically decrease as the learning proceeds.</div>
+<div dir="auto" class="course-quiz-options">
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[725a8d9a0abb4f3308153eef2e9ed6fa][]" id="gensym_549ada156d13a" value="caef84cfb023548aaf676cc2aab99cc3"><label for="gensym_549ada156d13a" style="cursor:pointer;">True</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[725a8d9a0abb4f3308153eef2e9ed6fa][]" id="gensym_549ada156fe1b" value="0f8bc66baa50f8aa5df7fcfb10c49fff"><label for="gensym_549ada156fe1b" style="cursor:pointer;">False</label>
+</div>
+</div>
+</div><div class="course-quiz-question-body">
+<h3 class="course-quiz-question-number">Question 4</h3>
+<div dir="auto" class="course-quiz-question-text">The perceptron algorithm as implemented and described in class implicitly uses a learning rate of 1. We can modify the algorithm to use a different learning rate $$\alpha$$ so that the update rule for an input $$x$$ and target $$t$$ becomes: <br>
+$$w^{(t)} \leftarrow w^{(t-1)} + \alpha (t - \text{prediction})x$$, <br>
+where $$\text{prediction}$$ is the decision made by the perceptron using the current weight vector $$w^{(t-1)}$$, given by:
+<br>
+$$
+\text{prediction} = 
+\begin{cases}
+1 \text{ if } w^Tx \geq 0 \\
+0 \text{ otherwise }
+\end{cases}
+$$<br>
+True or false: if we use a learning rate of 2, then the perceptron algorithm will always converge to a solution for linearly separable datasets.</div>
+<div dir="auto" class="course-quiz-options">
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[3c2daaab4a75768b020a03213cbc2afc][]" id="gensym_549ada157ac00" value="8bc04b32de5ebd01f113c0618281e1f3"><label for="gensym_549ada157ac00" style="cursor:pointer;">True</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[3c2daaab4a75768b020a03213cbc2afc][]" id="gensym_549ada157dce5" value="c47e6c689c629d6fcdf7a1acf867a50d"><label for="gensym_549ada157dce5" style="cursor:pointer;">False</label>
+</div>
+</div>
+</div><div class="course-quiz-question-body">
+<h3 class="course-quiz-question-number">Question 5</h3>
+<div dir="auto" class="course-quiz-question-text">According to the code, how many iterations does it take for the perceptron to converge to a solution on <i>dataset 3</i> using the provided initial weight vector <i>w_init</i>?
+<br>
+Note: the program will output<br>
+Number of errors in iteration $$x$$:	0<br>
+You simply need to report $$x$$.</div>
+<div dir="auto" class="course-quiz-options">
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[b5da153c78cdb01f9877e057ef1b6b9f][]" id="gensym_549ada158aa44" value="2716aebfaaed17b554990c02f07f4e0c"><label for="gensym_549ada158aa44" style="cursor:pointer;">2</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[b5da153c78cdb01f9877e057ef1b6b9f][]" id="gensym_549ada158fe11" value="f5b8528f19b8c6105a09b81f023e8744"><label for="gensym_549ada158fe11" style="cursor:pointer;">6</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[b5da153c78cdb01f9877e057ef1b6b9f][]" id="gensym_549ada159372b" value="12e0bdb6b3c860d5b8c86d8dd6869dde"><label for="gensym_549ada159372b" style="cursor:pointer;">9</label>
+</div>
+<div class="course-quiz-option">
+<input dir="auto" class="course-quiz-input" type="radio" name="answer[b5da153c78cdb01f9877e057ef1b6b9f][]" id="gensym_549ada1596cf8" value="0fd3f7c186c7e1ad60561606c15f77a3"><label for="gensym_549ada1596cf8" style="cursor:pointer;">It doesn't converge.</label>
+</div>
+</div>
+</div>
+            
+<div class="course-quiz-honor-code">
+    <label class="checkbox">
+        <input type="checkbox">
+        In accordance with the Coursera Honor Code, I (mor) certify that the answers here are my own work.        <span class="course-quiz-honor-code-thanks" style="display:none;">Thank you!</span>
+    </label>
+
+</div>
+    
+            <div class="course-quiz-submit-button-container">
+        <input type="hidden" name="__csrf-token" value="ecHHVYQr49fy0Z5RvFoS">
+        <input class="btn btn-success" type="submit" name="submit_answers"
+               value="Submit Answers" />
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <input class="btn btn-primary" type="submit" name="save_answers"
+               value="Save Answers" />
+
+        <div class="course-quiz-honor-code-status" style="margin-top:10px; display:none;">You cannot submit your work until you agree to the Honor Code. Thanks!</div>
+
+    </div>
+    
+
+
+    </form>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  config: ["MMLorHTML.js"],
+  
+  styleSheets: [],
+  styles: {},
+
+  jax: ["input/TeX"],
+  
+  extensions: ["tex2jax.js"],
+
+  preJax: null,
+  postJax: null,
+
+  preRemoveClass: "MathJax_Preview",
+
+  showProcessingMessages: true,
+
+  messageStyle: "none",
+  
+  displayAlign: "center",
+  displayIndent: "0em",
+  
+  delayStartupUntil: "none",
+
+  skipStartupTypeset: false,
+  
+  elements: [],
+  
+  tex2jax: {
+	    inlineMath: [
+	                 ['$$','$$'],      // uncomment this for standard TeX math delimiters
+	                 ['\\(','\\)']
+	                 ],
+
+	                 displayMath: [
+	                 ['\\[','\\]']
+	                 ],
+
+    skipTags: ["script","noscript","style","textarea","pre","code"],
+    ignoreClass: "tex2jax_ignore",
+    processClass: "tex2jax_process",
+    processEscapes: false,
+    processEnvironments: true,
+    preview: "TeX"
+    
+  },
+  
+  mml2jax: {
+    preview: "alttext"
+    
+  },
+  
+  jsMath2jax: {
+    preview: "TeX"
+    
+  },
+
+  TeX: {
+    TagSide: "right",
+    TagIndent: ".8em",
+    MultLineWidth: "85%",
+    Macros: {},
+
+    extensions: ["AMSmath.js", "AMSsymbols.js"]
+    
+  },
+
+  //============================================================================
+  //
+  //  These parameters control the MathML inupt jax.
+  //
+  MathML: {
+    //
+    //  This specifies whether to use TeX spacing or MathML spacing when the
+    //  HTML-CSS output jax is used.
+    //
+    useMathMLspacing: false
+  },
+  
+  //============================================================================
+  //
+  //  These parameters control the HTML-CSS output jax.
+  //
+  "HTML-CSS": {
+    
+    scale: 100,
+    
+    availableFonts: ["STIX","TeX"],
+    
+    preferredFont: "TeX",
+    
+    webFont: "TeX",
+    
+    imageFont: "TeX",
+    
+    undefinedFamily: "STIXGeneral,'Arial Unicode MS',serif",
+      
+    showMathMenu: true,
+
+    styles: {},
+    
+    tooltip: {
+      delayPost: 600,          // milliseconds delay before tooltip is posted after mouseover
+      delayClear: 600,         // milliseconds delay before tooltip is cleared after mouseout
+      offsetX: 10, offsetY: 5  // pixels to offset tooltip from mouse position
+    }
+  },
+  
+  //============================================================================
+  //
+  //  These parameters control the NativeMML output jax.
+  //
+  NativeMML: {
+
+    scale: 100,
+
+    showMathMenu: true,
+    showMathMenuMSIE: true,
+
+    styles: {}
+  },
+  
+  MathMenu: {
+    delay: 400,
+    
+    helpURL: "http://www.mathjax.org/help/user/",
+
+    showRenderer: true,
+    showFontMenu: false,
+    showContext:  false,
+
+    windowSettings: {
+      status: "no", toolbar: "no", locationbar: "no", menubar: "no",
+      directories: "no", personalbar: "no", resizable: "yes", scrollbars: "yes",
+      width: 100, height: 50
+    },
+    
+    styles: {}
+    
+  },
+
+  MMLorHTML: {
+    prefer: {
+      MSIE:    "MML",
+      Firefox: "HTML",
+      Opera:   "HTML",
+      other:   "HTML"
+    }
+  }
+});
+</script>
+<script type="text/javascript">
+(function () {
+
+  function loadMathJax() {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://duqnjvq4jwr55.cloudfront.net/2.1/MathJax.js";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  }
+
+  window.loadOrRefreshMathJax = function(domId) {
+    if (window.MathJax) {
+      if (domId) {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub, domId]);
+      } else {
+        MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+      }
+    } else {
+      loadMathJax();
+    }
+  }
+})();
+</script></div><!-- - track IE8 and less browser for eventing purposes--><!--[if lte IE 8]><script>window._204 = window._204 || [];
+window._gaq = window._gaq || [];
+window._gaq.push(
+    ['_setAccount', 'UA-28377374-1'],
+    ['_setDomainName', window.location.hostname],
+    ['_setAllowLinker', true],
+    ['_trackPageview', window.location.pathname]);
+window._204.push(
+  ['client', 'home'],
+  {key:"pageview", value:window.location.pathname});</script><script src="https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/js/lib/204.js"></script><script src="https://ssl.google-analytics.com/ga.js"></script><![endif]--><div id="fb-root"></div><div id="origami" data-js="origami"><div style="position:absolute;top:0px;left:0px;width:100%;height:100%;background:#f5f5f5;padding-top:5%;"><div id="coursera-loading-nojs" style="text-align:center; margin-bottom:10px;display:none;"><div>Please use a <a href="https://courserahelp.zendesk.com/hc/articles/201522945-Recommended-Software-and-Devices">modern browser </a> with JavaScript enabled to use Coursera.</div><div id="get-browser-zh" style="display:none;">请下载现代的浏览器（<a href="http://windows.microsoft.com/zh-cn/internet-explorer/download-ie">IE11</a>或<a href="https://www.google.com/intl/zh-CN/chrome/browser/">Google Chrome</a>）来使用Coursera。</div></div><div><span id="coursera-loading-js" style="display: none; padding-left:45%; font-size: 14px; line-height: 1.428571429; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif">loading &nbsp;&nbsp;<img src="https://dw0ugk4msqulk.cloudfront.net/images/icons/loading.gif"></span></div><noscript><div style="text-align:center; margin-bottom:10px;">Please use a <a href="https://courserahelp.zendesk.com/hc/articles/201522945-Recommended-Software-and-Devices">modern browser </a> with JavaScript enabled to use Coursera.</div></noscript></div></div><!--[if gte IE 9]><script>document.getElementById("coursera-loading-js").style.display = 'block';</script><![endif]-->
+<!--[if lte IE 8]><script>document.getElementById("coursera-loading-nojs").style.display = 'block';</script><![endif]-->
+<!--[if !IE]> --><script>document.getElementById("coursera-loading-js").style.display = 'block';</script><!-- <![endif]--><script>if (/zh/i.test(window.localStorage ? localStorage.getItem('locale') : '') || '{{ locale }}') {
+  document.getElementById('get-browser-zh').style.display = 'block';
+}</script><!--[if !IE]> --><script>document.getElementById('coursera-loading-js').style.display = 'block';</script><!-- <![endif]-->
+    <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/js/vendor/jquery.v1-7.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/js/vendor/underscore.v1-3-1.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/quiz_timer.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/core/js/get_query_parameters.js?version=20120326' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/quiz_attempt.js?version=20130416' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/latex_preview.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/db_class.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/initRunQuery.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/core/js/loadOrRefreshMathJax.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/grid_questions.js' ></script>
+      <script src='https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/spark/app/quiz/js/quiz_error_box_dummy.js' ></script>
+  <script src="https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/js/vendor/require.v2-1-1.js"></script><script data-baseurl="https://dw0ugk4msqulk.cloudfront.net/4935ee00672ba92e402b5bc8cad5f3d734ad10cb/" data-version="4935ee00672ba92e402b5bc8cad5f3d734ad10cb" data-timestamp='1419031049462' data-debug='0' data-locale="en_US" id="_require">if(document.getElementById('coursera-loading-js').style.display == 'block') {
+  (function(el) {
+     require.config({
+       //enforceDefine: true,
+       waitSeconds: 75,
+       baseUrl: el.getAttribute('data-baseurl'),
+       urlArgs: el.getAttribute('data-debug') == '1' ? 'v=' + el.getAttribute('data-timestamp') : '',
+       shim: {
+          'underscore': {
+             exports: '_'
+          },
+          'backbone': {
+             deps: ['underscore', 'jquery'],
+             exports: 'Backbone',
+             init: function(_, $) {
+               Backbone.$ = $;
+               return Backbone;
+             }
+          },
+          'pages/hg/thirdparty/js/backbone.marionette': {
+            deps: ['backbone']
+          },
+          'pages/hg/thirdparty/js/webshims/polyfiller': {
+            deps: ['jquery']
+          },
+          'pages/hg/thirdparty/js/webshims/extras/mousepress': {
+            deps: ['jquery', 'pages/hg/thirdparty/js/webshims/polyfiller']
+          },
+          'pages/hg/thirdparty/js/jquery.throttle': {
+            deps: ['jquery']
+          },
+          'js/lib/jquery.linkify': {
+            deps: ['jquery']
+          },
+          'pages/hg/thirdparty/js/js/bootstrap/alert': {
+            deps: ['jquery', 'pages/hg/thirdparty/js/bootstrap/transition']
+          },
+          'spark/core/js/jquery_ui': {
+            deps: ['jquery']
+          },
+          'spark/core/js/jquery.history': {
+            deps: ['jquery']
+          },
+          'js/lib/bootstrap.tooltip': {
+            deps: ['jquery']
+          },
+          'pages/hg/thirdparty/js/bootstrap/transition': {
+            deps: ['jquery']
+          },
+          'pages/hg/thirdparty/js/bootstrap/tab': {
+            deps: ['jquery']
+          },
+          'bundles/videojs/lib/video.4.3.0': {
+            exports: 'vjs'
+          }
+       },
+       paths: {
+          'q': 'js/vendor/q.v1-0-1',
+          'react-with-addons': 'js/vendor/react-with-addons.v0-12',
+          'jquery':                         'pages/spark/jquery',
+          'underscore':                     'js/vendor/underscore.v1-5-2',
+          'backbone':                       'js/vendor/backbone.v1-1-0',
+          'backbone.relational':            'js/lib/backbone.relational.0.8.6',
+          'i18n':                           'js/lib/i18n._t',
+          'css':                            'js/vendor/require.css.v0-1-2',
+          'memoize':                        'js/lib/require.memoize.v0-0-1',
+          'pages/spark/models/user.json':   'empty:',
+          'pages/spark/models/course.json': 'empty:',
+          'pages/spark/models/navbar.json': 'empty:'
+       },
+       callback: function() {
+                    require(['pages/spark/routes']);
+                },
+       config: {
+         i18n: {
+           locale: (window.localStorage ? localStorage.getItem('locale') : '') || el.getAttribute('data-locale')
+         }
+       }
+     });
+  })(document.getElementById('_require'));
+}
+</script><script>define('pages/spark/models/user.json', [], function(){
+      return JSON.parse("{\"id\":2891034,\"email_address\":\"marghachou@yahoo.com\",\"full_name\":\"mor\",\"locale\":\"en_US\",\"timezone\":\"America\\\/New_York\",\"access_group_id\":\"4\",\"registration_time\":\"1378920826\",\"last_access_time\":\"1419401549\",\"last_access_ip\":\"66.231.133.119\",\"signature_track_register_time\":\"0\",\"email_announcement\":\"1\",\"email_forum\":\"1\",\"in_signature_track\":\"0\",\"wishes_proctored_exam\":\"0\",\"first_name\":\"mor\",\"permissions\":[\"default\",\"allow_site_access\"],\"group\":\"Student\",\"anonymous\":false,\"forum_title\":\"Student\",\"signature_track_state\":1,\"verified_quizzes\":[],\"submitted_quizzes\":[\"6\",\"7\",\"10\",\"11\",\"12\",\"13\",\"14\",\"15\",\"16\",\"17\",\"19\",\"20\",\"43\",\"45\",\"47\",\"49\",\"51\",\"53\",\"65\"],\"scheduled_proctored_exam\":null,\"last_chance_modal\":null,\"flexjoin_last_chance_modal\":null}");
+  });
+define('pages/spark/models/course.json', [], function(){
+      return JSON.parse("{\"id\":256,\"isPrivate\":false,\"type\":\"public\",\"name\":\"Neural Networks for Machine Learning\",\"instructor\":\"Geoffrey Hinton\",\"sessionName\":\"neuralnets-2012-001\",\"externalBaseURL\":\"https:\\\/\\\/www.coursera.org\\\/\",\"shortname\":\"neuralnets\",\"host\":\"https:\\\/\\\/www.coursera.org\\\/\",\"assetUnversionedLink\":\"https:\\\/\\\/dw0ugk4msqulk.cloudfront.net\\\/\",\"cheggID\":\"\",\"hasLTI\":true,\"badgevilleDomain\":null,\"linkable\":false,\"universityShortname\":\"utoronto\",\"signatureTrackStatus\":{\"signature_track_enabled\":0},\"courseURLs\":{\"log_in_link\":\"https:\\\/\\\/accounts.coursera.org\\\/signin?post_redirect=https%3A%2F%2Faccounts.coursera.org%2Fsignin%3Fuser_action%3Dclass%26course_id%3D256%26post_redirect%3Dhttps%253A%252F%252Fclass.coursera.org%252Fneuralnets-2012-001%252Fauth%252Fauth_redirector%253Ftype%253Dlogin%2526subtype%253Dnormal%2526visiting%253D\",\"sign_up_link\":\"https:\\\/\\\/accounts.coursera.org\\\/signup?enroll_cid=256&enroll_sn=neuralnets&enroll_n=Neural Networks for Machine Learning\",\"view_course_info_link\":\"https:\\\/\\\/www.coursera.org\\\/course\\\/neuralnets\",\"sign_up_link_cant_enroll\":\"https:\\\/\\\/accounts.coursera.org\\\/signup?post_redirect=https%3A%2F%2Fwww.coursera.org%2Fcourse%2Fneuralnets\"},\"courseBase\":\"https:\\\/\\\/class.coursera.org\\\/neuralnets-2012-001\\\/\",\"search\":true,\"hideWiki\":false,\"aceStartRegistrationDate\":\"Wed 31 Dec 1969  7:00 PM EST\",\"aceEndRegistrationDate\":\"Wed 31 Dec 1969  7:00 PM EST\",\"aceExamStartDate\":\"Wed 31 Dec 1969  7:00 PM EST\",\"aceExamEndDate\":\"Wed 31 Dec 1969  7:00 PM EST\",\"aceExamRules\":null,\"aceExamDuration\":null,\"aceBeforeExam\":false,\"aceAfterExam\":true,\"aceHours\":null,\"aceCreditType\":null,\"acePrice\":null,\"aceExamID\":null,\"aceEligible\":false,\"canRegisterForACE\":false,\"specialization\":null,\"supportForums\":false,\"textbooks\":\"\",\"inVideoQuizV2\":false,\"in_flexjoin\":null,\"honorCodeExtraText\":\"\",\"honorCodeCustomTitle\":null,\"honorCodeCustomButton\":null,\"studentAccessDisabled\":0,\"disableQQs\":false}");
+  });
+  define('pages/spark/models/navbar.json', [], function(){
+      return JSON.parse("{\"items\":[{\"name\":\"Home\",\"icon\":\"home\",\"link_type\":\"circuit\",\"link_data\":\"class:index\"},{\"name\":\"Student Survey\",\"icon\":\"quiz\",\"link_type\":\"circuit\",\"link_data\":\"quiz:index?quiz_type=survey\"},{\"name\":\"Video Lectures\",\"icon\":\"lecture\",\"link_type\":\"circuit\",\"link_data\":\"lecture:index\"},{\"name\":\"Discussion Forums\",\"icon\":\"forum\",\"link_type\":\"circuit\",\"link_data\":\"forum:index\"},{\"name\":\"\",\"icon\":\"\",\"link_type\":\"circuit\",\"link_data\":\"\"},{\"name\":\"Quizzes\",\"icon\":\"quiz\",\"link_type\":\"circuit\",\"link_data\":\"quiz:index\"},{\"name\":\"Course Logistics\",\"icon\":\"wiki\",\"link_type\":\"wiki\",\"link_data\":\"courselogistics\"},{\"name\":\"Syllabus\",\"icon\":\"wiki\",\"link_type\":\"wiki\",\"link_data\":\"syllabus\"},{\"name\":\"About Us\",\"icon\":\"wiki\",\"link_type\":\"wiki\",\"link_data\":\"aboutus\"},{\"name\":\"\",\"icon\":\"\",\"link_type\":\"circuit\",\"link_data\":\"\"},{\"name\":\"Octave Installation\",\"icon\":\"wiki\",\"link_type\":\"wiki\",\"link_data\":\"octaveinstallation\"}]}");
+  });
+</script><script>var coursera_enable_new_help_center = false;
+</script></body></html>
