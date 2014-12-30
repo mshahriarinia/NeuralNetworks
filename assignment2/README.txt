@@ -36,18 +36,16 @@ To see the list of words in the vocabulary, type -
 
 > data.vocab
 
-'data.trainData' is a matrix of 372550 X 4. This means there are 372550
-training cases and 4 words per training case. Each entry is an integer that is
-the index of a word in the vocabulary. So each row represents a sequence of 4
-words. 'data.validData' and 'data.testData' are also similar. They contain
-46,568 4-grams each. All three need to be separated into inputs and targets
-and the training set needs to be split into mini-batches. The file load_data.m
-provides code for doing that. To run it type:
+'data.trainData' is a matrix of 372550 X 4. This means there are 372550 training cases and 4 words per training case. 
+	Each entry is an integer that is the index of a word in the vocabulary. So each row represents a sequence of 4
+	words. 
+'data.validData' and 'data.testData' are also similar. They contain 46,568 4-grams each. 
 
->[train_x, train_t, valid_x, valid_t, test_x, test_t, vocab] = load_data(100);
+All three need to be separated into inputs and targets and the training set needs to be split into mini-batches. The file load_data.m provides code for doing that. To run it type:
 
-This will load the data, separate it into inputs and target, and make
-mini-batches of size 100 for the training set.
+>[train_input, train_target, valid_input, valid_target, test_input, test_target, vocab] = load_data(100)
+
+This will load the data, separate it into inputs and target, and make mini-batches of size 100 for the training set (reshapes data).
 
 train.m implements the function that trains a neural net language model.
 To run the training, execute the following -
