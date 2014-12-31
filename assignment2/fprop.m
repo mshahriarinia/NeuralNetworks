@@ -48,7 +48,6 @@ function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
 numhid2 = size(embed_to_hid_weights, 2);
 
 %% COMPUTE STATE OF WORD EMBEDDING LAYER.
-% Look up the inputs word indices in the word_embedding_weights matrix.
     
     % stack the columns together one after another, one 3-gram at a time. like reshape([1 2 3 4; 7 8 9 0 ],1,[])
     input_batch_reshaped = reshape(input_batch, 1, []); 
@@ -62,9 +61,10 @@ numhid2 = size(embed_to_hid_weights, 2);
     embedding_layer_state = reshape(word_embedding_weights_lookedup, numhid1 * numgrams, []);
 
 %% COMPUTE STATE OF HIDDEN LAYER.
-% Compute inputs to hidden units.
-inputs_to_hidden_units = embed_to_hid_weights' * embedding_layer_state + ...
-  repmat(hid_bias, 1, batchsize);
+% Compute inputs to hidden units: weight*state+bias
+% each underlying neuron times its weight + bias. TODO bias is zero for embeded layer state
+repmat_of_bias_for_minibatch = repmat(hid_bias, 1, batchsize);
+inputs_to_hidden_units = embed_to_hid_weights' * embedding_layer_state + repmat_of_bias_for_minibatch; 
 
 % Apply logistic activation function.
 % FILL IN CODE. Replace the line below by one of the options.
@@ -73,6 +73,7 @@ hidden_layer_state = zeros(numhid2, batchsize);
 % (a) hidden_layer_state = 1 ./ (1 + exp(inputs_to_hidden_units));
 % (b) hidden_layer_state = 1 ./ (1 - exp(-inputs_to_hidden_units));
 % (c) hidden_layer_state = 1 ./ (1 + exp(-inputs_to_hidden_units));
+hidden_layer_state = 1 ./ (1 + exp(-inputs_to_hidden_units));
 % (d) hidden_layer_state = -1 ./ (1 + exp(-inputs_to_hidden_units));
 
 %% COMPUTE STATE OF OUTPUT LAYER.
@@ -81,6 +82,7 @@ hidden_layer_state = zeros(numhid2, batchsize);
 inputs_to_softmax = zeros(vocab_size, batchsize);
 % Options
 % (a) inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, 1, batchsize);
+inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, 1, batchsize);
 % (b) inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, batchsize, 1);
 % (c) inputs_to_softmax = hidden_layer_state * hid_to_output_weights' +  repmat(output_bias, 1, batchsize);
 % (d) inputs_to_softmax = hid_to_output_weights * hidden_layer_state +  repmat(output_bias, batchsize, 1);
