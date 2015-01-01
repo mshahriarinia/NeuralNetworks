@@ -72,7 +72,7 @@ hidden_layer_state = 1 ./ (1 + exp(-inputs_to_hidden_units));
 
 %% COMPUTE STATE OF softmax LAYER.
 % Compute inputs to softmax. FILL IN CODE. Replace the line below by one of the options.
-inputs_to_softmax = hid_to_softmax_weights' * hidden_layer_state +  repmat(softmax_bias, 1, batchsize);
+inputs_to_softmax = hid_to_softmax_weights' * hidden_layer_state +  repmat(softmax_bias, 1, batchsize); % sigma wx  is input to each softmax
 
 % Subtract maximum. 
 % Remember that adding or subtracting the same constant from each input to a
