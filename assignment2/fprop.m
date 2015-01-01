@@ -1,6 +1,7 @@
-function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
-  fprop(input_batch, word_embedding_weights, embed_to_hid_weights,...
-  hid_to_output_weights, hid_bias, output_bias)
+function [embedding_layer_state, hidden_layer_state, softmax_layer_state] = ... % by state it means output of that layer
+    fprop(input_batch, ...
+          word_embedding_weights, embed_to_hid_weights, hid_to_softmax_weights, ...
+          hid_bias, softmax_bias)   
 % This method forward propagates through a neural network.
 % Note: first hidden layer (Word Embedding) is hidden1 and the second hidden
 % layer (Hidden Layer) is hidden2
@@ -25,12 +26,12 @@ function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
 %   layer as a numhid1*numwords X numhid2 matrix: 
 %     numhid2    :   number of hidden units. Number of units in hidden layer; default = 200.
 %
-%   hid_to_output_weights: Weights between the hidden layer and output softmax
+%   hid_to_softmax_weights: Weights between the hidden layer and output softmax
 %   unit as a numhid2 X vocab_size matrix:
 %
 %   hid_bias: Bias of the hidden layer as a numhid2 X 1 matrix.
 %
-%   output_bias: Bias of the output layer as a matrix of size vocab_size X 1.
+%   softmax_bias: Bias of the softmax layer as a matrix of size vocab_size X 1.
 %
 % Outputs:
 %   embedding_layer_state: State of units in the embedding layer as a matrix of
@@ -39,7 +40,7 @@ function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
 %   hidden_layer_state: State of units in the hidden layer as a matrix of size
 %     numhid2 X batchsize
 %
-%   output_layer_state: State of units in the output layer as a matrix of size
+%   softmax_layer_state: State of units in the softmax layer as a matrix of size
 %     vocab_size X batchsize
 %
 
@@ -47,16 +48,16 @@ function [embedding_layer_state, hidden_layer_state, output_layer_state] = ...
 [vocab_size, numhid1] = size(word_embedding_weights); % vocabulary embedding weights
 numhid2 = size(embed_to_hid_weights, 2);
 
-%% COMPUTE STATE OF WORD EMBEDDING LAYER.
+%% COMPUTE STATE OF WORD EMBEDDING LAYER. : just replicates the value of embedding weights for input batch
     
     % stack the columns together one after another, one 3-gram at a time. like reshape([1 2 3 4; 7 8 9 0 ],1,[])
-    input_batch_reshaped = reshape(input_batch, 1, []); 
+    input_batch_vectorized = reshape(input_batch, 1, []); 
    
-    % extract weights of each of the vocabulary instances in the input. one parameter set
+    % only pick weights of each of the vocabulary instances in the input. one parameter set
     % for each of the 300 words for each of the 50 neurons in Embedding layer, hence a 300*50
-    word_embedding_weights_lookedup = word_embedding_weights(input_batch_reshaped,:)';
+    word_embedding_weights_lookedup = word_embedding_weights(input_batch_vectorized,:)';
 
-    % reshape 300*50 to 3*50*100 so all 3gram parameters in Embed layer are
+    % reshape 300*50 to (3*50)*100 so all 3gram parameters in Embed layer are
     % in line with  each other, and we have 100 minibatches
     embedding_layer_state = reshape(word_embedding_weights_lookedup, numhid1 * numgrams, []);
 
@@ -66,26 +67,12 @@ numhid2 = size(embed_to_hid_weights, 2);
 repmat_of_bias_for_minibatch = repmat(hid_bias, 1, batchsize);
 inputs_to_hidden_units = embed_to_hid_weights' * embedding_layer_state + repmat_of_bias_for_minibatch; 
 
-% Apply logistic activation function.
-% FILL IN CODE. Replace the line below by one of the options.
-hidden_layer_state = zeros(numhid2, batchsize);
-% Options
-% (a) hidden_layer_state = 1 ./ (1 + exp(inputs_to_hidden_units));
-% (b) hidden_layer_state = 1 ./ (1 - exp(-inputs_to_hidden_units));
-% (c) hidden_layer_state = 1 ./ (1 + exp(-inputs_to_hidden_units));
+% Apply logistic activation function. FILL IN CODE. Replace the line below by one of the options.
 hidden_layer_state = 1 ./ (1 + exp(-inputs_to_hidden_units));
-% (d) hidden_layer_state = -1 ./ (1 + exp(-inputs_to_hidden_units));
 
-%% COMPUTE STATE OF OUTPUT LAYER.
-% Compute inputs to softmax.
-% FILL IN CODE. Replace the line below by one of the options.
-inputs_to_softmax = zeros(vocab_size, batchsize);
-% Options
-% (a) inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, 1, batchsize);
-inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, 1, batchsize);
-% (b) inputs_to_softmax = hid_to_output_weights' * hidden_layer_state +  repmat(output_bias, batchsize, 1);
-% (c) inputs_to_softmax = hidden_layer_state * hid_to_output_weights' +  repmat(output_bias, 1, batchsize);
-% (d) inputs_to_softmax = hid_to_output_weights * hidden_layer_state +  repmat(output_bias, batchsize, 1);
+%% COMPUTE STATE OF softmax LAYER.
+% Compute inputs to softmax. FILL IN CODE. Replace the line below by one of the options.
+inputs_to_softmax = hid_to_softmax_weights' * hidden_layer_state +  repmat(softmax_bias, 1, batchsize);
 
 % Subtract maximum. 
 % Remember that adding or subtracting the same constant from each input to a
@@ -96,8 +83,8 @@ inputs_to_softmax = inputs_to_softmax...
   - repmat(max(inputs_to_softmax), vocab_size, 1);
 
 % Compute exp.
-output_layer_state = exp(inputs_to_softmax);
+softmax_layer_state = exp(inputs_to_softmax);
 
 % Normalize to get probability distribution.
-output_layer_state = output_layer_state ./ repmat(...
-  sum(output_layer_state, 1), vocab_size, 1);
+softmax_layer_state = softmax_layer_state ./ repmat(...
+  sum(softmax_layer_state, 1), vocab_size, 1);

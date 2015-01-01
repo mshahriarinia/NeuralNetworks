@@ -47,18 +47,18 @@ hid_to_output_weights_delta = zeros(numhid2, vocab_size);
 hid_bias_delta = zeros(numhid2, 1);
 output_bias_delta = zeros(vocab_size, 1);
 expansion_matrix = eye(vocab_size);
-count = 0;
+count = 0; % to count and use for average calculation every once in a while as we wish and set in parameters.
 tiny = exp(-30);
 
 % TRAIN.
 for epoch = 1:epochs
   fprintf(1, 'Epoch %d\n', epoch);
-  this_chunk_CE = 0;
+  this_epoch_CE = 0;
   trainset_CE = 0;
   % LOOP OVER MINI-BATCHES.
   for m = 1:numbatches
     input_batch = train_input(:, :, m);
-    target_batch = train_target(:, :, m);
+    target_value_batch = train_target(:, :, m);
 
     % FORWARD PROPAGATE.
     % Compute the state of each layer in the network given the input batch
@@ -70,32 +70,60 @@ for epoch = 1:epochs
 
     % COMPUTE DERIVATIVE.
     %% Expand the target to a sparse 1-of-K vector.
-    expanded_target_batch = expansion_matrix(:, target_batch);
+   
+    % target_value_batch = t in lecture note terms (target value). 
+    % only the output value for taget's word should be 1, the rest are 0. 
+    target_value_batch = expansion_matrix(:, target_value_batch); % 0/1 mark for vocabulary that are in target batch 
+    
     %% Compute derivative of cross-entropy loss function.
-    error_deriv = output_layer_state - expanded_target_batch;
 
-    % MEASURE LOSS FUNCTION.
-    CE = -sum(sum(...
-      expanded_target_batch .* log(output_layer_state + tiny))) / batchsize;
+    % MEASURE LOSS FUNCTION of whole batch.
+    
+    CE = -sum(sum(target_value_batch .* log(output_layer_state + tiny))) / batchsize; % CE = -\sigma t_j log(y_j)
+    CE_gradient = output_layer_state - target_value_batch; % \partial CE / \partial z_i = y_i-t_i
+
+    
+    
+    %% for logging purposes
     count =  count + 1;
-    this_chunk_CE = this_chunk_CE + (CE - this_chunk_CE) / count;
+    this_epoch_CE = this_epoch_CE + (CE - this_epoch_CE) / count;  % TODO: the averaging doesn't seem right
     trainset_CE = trainset_CE + (CE - trainset_CE) / m;
-    fprintf(1, '\rBatch %d Train CE %.3f', m, this_chunk_CE);
+    fprintf(1, '\rBatch %d Train CE %.3f', m, this_epoch_CE);
     if mod(m, show_training_CE_after) == 0
       fprintf(1, '\n');
       count = 0;
-      this_chunk_CE = 0;
+      this_epoch_CE = 0;
     end
     if OctaveMode
       fflush(1);
     end
-
+ 
+    
+    
+    
+    
+    
+    
     % BACK PROPAGATE.
     %% OUTPUT LAYER.
-    hid_to_output_weights_gradient =  hidden_layer_state * error_deriv';
-    output_bias_gradient = sum(error_deriv, 2);
-    back_propagated_deriv_1 = (hid_to_output_weights * error_deriv) ...
-      .* hidden_layer_state .* (1 - hidden_layer_state);
+   
+    
+    hid_to_output_weights_gradient =  hidden_layer_state * CE_gradient';
+   
+    output_bias_gradient = sum(CE_gradient, 2);
+    
+    back_propagated_deriv_1 = (hid_to_output_weights * CE_gradient) .* hidden_layer_state .* (1 - hidden_layer_state);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
     %% HIDDEN LAYER.
     % FILL IN CODE. Replace the line below by one of the options.
@@ -131,12 +159,12 @@ for epoch = 1:epochs
     end
     
     % UPDATE WEIGHTS AND BIASES.
-    word_embedding_weights_delta = ...
-      momentum .* word_embedding_weights_delta + ...
-      word_embedding_weights_gradient ./ batchsize;
-    word_embedding_weights = word_embedding_weights...
-      - learning_rate * word_embedding_weights_delta;
+    word_embedding_weights_delta = momentum .* word_embedding_weights_delta + word_embedding_weights_gradient ./ batchsize;
 
+    word_embedding_weights = word_embedding_weights - learning_rate * word_embedding_weights_delta;
+
+    
+    
     embed_to_hid_weights_delta = ...
       momentum .* embed_to_hid_weights_delta + ...
       embed_to_hid_weights_gradient ./ batchsize;
@@ -178,6 +206,14 @@ for epoch = 1:epochs
   end
   fprintf(1, '\rAverage Training CE %.3f\n', trainset_CE);
 end
+
+%% %%%%
+%% %%%%
+%% %%%%
+
+
+
+
 fprintf(1, 'Finished Training.\n');
 if OctaveMode
   fflush(1);
