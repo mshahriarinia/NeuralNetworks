@@ -89,9 +89,9 @@ for epoch = 1:epochs
     count =  count + 1;
     this_epoch_CE = this_epoch_CE + (CE - this_epoch_CE) / count;  % TODO: the averaging doesn't seem right
     trainset_CE = trainset_CE + (CE - trainset_CE) / m;
-    fprintf(1, '\rBatch %d Train CE %.3f', m, this_epoch_CE);
+%    fprintf(1, '\rBatch %d Train CE %.3f', m, this_epoch_CE);
     if mod(m, show_training_CE_after) == 0
-      fprintf(1, '\n');
+ %     fprintf(1, '\n');
       count = 0;
       this_epoch_CE = 0;
     end
