@@ -6,7 +6,10 @@ function a3(wd_coefficient, n_hid, n_iters, learning_rate, momentum_multiplier, 
   from_data_file = load('data.mat');
   datas = from_data_file.data;
   n_training_cases = size(datas.training.inputs, 2);
-  if n_iters ~= 0, test_gradient(model, datas.training, wd_coefficient); end
+  if n_iters ~= 0,
+    fprintf('Now testing the gradient on the whole training set... ');
+    test_gradient(model, datas.training, wd_coefficient);
+  end
 
   % optimization
   theta = model_to_theta(model);
@@ -39,8 +42,11 @@ function a3(wd_coefficient, n_hid, n_iters, learning_rate, momentum_multiplier, 
     if mod(optimization_iteration_i, round(n_iters/10)) == 0,
       fprintf('After %d optimization iterations, training data loss is %f, and validation data loss is %f\n', optimization_iteration_i, training_data_losses(end), validation_data_losses(end));
     end
+    if optimization_iteration_i == n_iters, % check gradient again, this time with more typical parameters and with a different data size
+      fprintf('Now testing the gradient on just a mini-batch instead of the whole training set... ');
+      test_gradient(model, training_batch, wd_coefficient);
+    end 
   end
-  if n_iters ~= 0, test_gradient(model, datas.training, wd_coefficient); end % check again, this time with more typical parameters
   if do_early_stopping,
     fprintf('Early stopping: validation loss was lowest after %d iterations. We chose the model that we had then.\n', best_so_far.after_n_iters);
     theta = best_so_far.theta;
@@ -138,12 +144,12 @@ end
 function ret = d_loss_by_d_model(model, data, wd_coefficient)
   % model.input_to_hid is a matrix of size <number of hidden units> by <number of inputs i.e. 256>
   % model.hid_to_class is a matrix of size <number of classes i.e. 10> by <number of hidden units>
-  % data.inputs is a matrix of size <number of inputs i.e. 256> by <number of data cases>. Each column describes a different data case. 
-  % data.targets is a matrix of size <number of classes i.e. 10> by <number of data cases>. Each column describes a different data case. It contains a one-of-N encoding of the class, i.e. one element in every column is 1 and the others are 0.
+  % data.inputs is a matrix of size <number of inputs i.e. 256> by <number of data cases>
+  % data.targets is a matrix of size <number of classes i.e. 10> by <number of data cases>
 
   % The returned object is supposed to be exactly like parameter <model>, i.e. it has fields ret.input_to_hid and ret.hid_to_class. However, the contents of those matrices are gradients (d loss by d model parameter), instead of model parameters.
 	 
-  % This is the only function that you're expected to change. Right now, it just returns a lot of zeros, which is obviously not the correct output. Your job is to replace that by a correct computation.
+  % This is the only function that you're expected to change. Right now, it just returns a lot of zeros, which is obviously not the correct output. Your job is to change that.
   ret.input_to_hid = model.input_to_hid * 0;
   ret.hid_to_class = model.hid_to_class * 0;
 end
