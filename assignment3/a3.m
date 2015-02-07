@@ -80,7 +80,17 @@ function test_gradient(model, data, wd_coefficient)
   base_theta = model_to_theta(model);
   h = 1e-2;
   correctness_threshold = 1e-5;
-  analytic_gradient = model_to_theta(d_loss_by_d_model(model, data, wd_coefficient));
+  analytic_gradient_struct = d_loss_by_d_model(model, data, wd_coefficient);
+  if size(fieldnames(analytic_gradient_struct)) != [2, 1],
+     error('The object returned by function d_loss_by_d_model should have exactly two field names: .input_to_hid and .hid_to_class');
+  end
+  if size(analytic_gradient_struct.input_to_hid) != size(model.input_to_hid),
+     error('The size of .input_to_hid of the return value of d_loss_by_d_model should be same as the size of model.input_to_hid');
+  end
+  if size(analytic_gradient_struct.hid_to_class) != size(model.hid_to_class),
+     error('The size of .hid_to_class of the return value of d_loss_by_d_model should be same as the size of model.hid_to_class');
+  end
+  analytic_gradient = model_to_theta(analytic_gradient_struct);
   % Test the gradient not for every element of theta, because that's a lot of work. Test for only a few elements.
   for i = 1:100,
     test_index = mod(i * 1299721, size(base_theta,1)) + 1; % 1299721 is prime and thus ensures a somewhat random-like selection of indices
