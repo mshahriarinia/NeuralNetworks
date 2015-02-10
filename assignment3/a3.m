@@ -7,7 +7,7 @@ function a3(wd_coefficient, n_hid, n_iters, learning_rate, momentum_multiplier, 
   if exist('page_output_immediately'), page_output_immediately(1); end
   more off;
   
-  % Model is a struct of two matrices: input_to_hi[256*7]   hid_to_class[7*10]
+  % Model is a struct of two matrices: input_to_hid[256*7]   hid_to_class[7*10]
   model = initial_model(n_hid);
   
   % load data
