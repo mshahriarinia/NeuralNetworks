@@ -290,7 +290,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     x = T.matrix('x')  # data, presented as rasterized images
     y = T.ivector('y')  # labels, presented as 1D vector of [int] labels
 
-    # construct the logistic regression class
+    # construct the logistic regression class  (initialize an instance)
     # Each MNIST image has size 28*28
     classifier = LogisticRegression(input=x, n_in=28 * 28, n_out=10)
 
@@ -364,7 +364,16 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
 
     done_looping = False
     epoch = 0
+    
+    #=============      VISUALIZATION
     error_list = []
+
+    #pyplot.show()
+
+    #=============      VISUALIZATION
+
+    
+    
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in xrange(n_train_batches):
@@ -419,8 +428,17 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
             if patience <= iter:
                 done_looping = True
                 break
-            
-        # ERROR VISULATIONS
+        
+        #======================== visualize weight
+        
+
+
+       
+
+        
+        #======================== visualize weight
+
+        # for ERROR VISULATIONS after all done
         error_list.append(best_validation_loss)
         # =============================                       MINIBATCH LOOP
     # =====================================                      EPOCH LOOP
@@ -437,6 +455,114 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     p.plot(x,y, color='red', lw=2)
     p.show()
     
+    ########### VISUALIZE WEIGHTS 1
+    
+    #from matplotlib import mpl,pyplot
+    import matplotlib as mpl
+    from matplotlib import pyplot
+    
+    fig = pyplot.figure(1)
+    ax= fig.gca()
+    
+    zvals = classifier.W.get_value()
+
+    zvals = zvals.reshape(28,28,10)
+    a1 = zvals[:,:,1].reshape(28,28)
+        
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                               ['black','white'],
+                                               256)
+    
+    img2 = pyplot.imshow(a1,
+                        interpolation='nearest',
+                        cmap = cmap2,
+                        origin='lower')
+    fig.canvas.draw()
+  
+    ########### VISUALIZE WEIGHTS 2
+    
+    fig = pyplot.figure(2)
+    ax= fig.gca()
+    
+    zvals = classifier.W.get_value()
+
+    zvals = zvals.reshape(28,28,10)
+    a1 = zvals[:,:,2].reshape(28,28)
+        
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                               ['black','white'],
+                                               256)
+    
+    img2 = pyplot.imshow(a1,
+                        interpolation='nearest',
+                        cmap = cmap2,
+                        origin='lower')
+    fig.canvas.draw()
+    
+    ########### VISUALIZE WEIGHTS 3
+    
+    fig = pyplot.figure(3)
+    ax= fig.gca()
+    
+    zvals = classifier.W.get_value()
+
+    zvals = zvals.reshape(28,28,10)
+    a1 = zvals[:,:,3].reshape(28,28)
+        
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                               ['black','white'],
+                                               256)
+    
+    img2 = pyplot.imshow(a1,
+                        interpolation='nearest',
+                        cmap = cmap2,
+                        origin='lower')
+    fig.canvas.draw()
+
+    ########### VISUALIZE WEIGHTS 4
+
+    fig = pyplot.figure(4)
+    ax= fig.gca()
+    
+    zvals = classifier.W.get_value()
+
+    zvals = zvals.reshape(28,28,10)
+    a1 = zvals[:,:,4].reshape(28,28)
+        
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                               ['black','white'],
+                                               256)
+    
+    img2 = pyplot.imshow(a1,
+                        interpolation='nearest',
+                        cmap = cmap2,
+                        origin='lower')
+    fig.canvas.draw()
+
+    ########### VISUALIZE WEIGHTS 5
+ 
+    fig = pyplot.figure(5)
+    ax= fig.gca()
+    
+    zvals = classifier.W.get_value()
+
+    zvals = zvals.reshape(28,28,10)
+    a1 = zvals[:,:,5].reshape(28,28)
+        
+    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
+                                               ['black','white'],
+                                               256)
+    
+    img2 = pyplot.imshow(a1,
+                        interpolation='nearest',
+                        cmap = cmap2,
+                        origin='lower')
+    fig.canvas.draw()
+    pyplot.show()     
+
+    ########### VISUALIZE WEIGHTS
+
+
     # ==========================================  ERROR VISUALIZATION
 
     
