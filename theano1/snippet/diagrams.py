@@ -1,8 +1,7 @@
 
-from matplotlib.mlab import normpdf
 import numpy as nx
-import pylab as p
 from numpy import sin
+import pylab as p
 import math
 
 x = nx.arange(-4, 4, 0.1)
