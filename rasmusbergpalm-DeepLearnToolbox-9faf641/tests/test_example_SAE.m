@@ -1,4 +1,6 @@
 function test_example_SAE
+ addpath(genpath('.')) 
+
 load mnist_uint8;
 
 train_x = double(train_x)/255;
@@ -13,7 +15,7 @@ sae = saesetup([784 100]);
 sae.ae{1}.activation_function       = 'sigm';
 sae.ae{1}.learningRate              = 1;
 sae.ae{1}.inputZeroMaskedFraction   = 0.5;
-opts.numepochs =   1;
+opts.numepochs =   30;
 opts.batchsize = 100;
 sae = saetrain(sae, train_x, opts);
 visualize(sae.ae{1}.W{1}(:,2:end)')
