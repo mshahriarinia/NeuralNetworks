@@ -364,6 +364,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
 
     done_looping = False
     epoch = 0
+    error_list = []
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in xrange(n_train_batches):
@@ -418,7 +419,27 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
             if patience <= iter:
                 done_looping = True
                 break
+            
+        # ERROR VISULATIONS
+        error_list.append(best_validation_loss)
+        # =============================                       MINIBATCH LOOP
+    # =====================================                      EPOCH LOOP
+    
+    
+    # ==========================================  ERROR VISUALIZATION
+    
+    import numpy as nx
+    import pylab as p
+    
+    x = nx.arange(0, epoch)
+    y = error_list 
+    
+    p.plot(x,y, color='red', lw=2)
+    p.show()
+    
+    # ==========================================  ERROR VISUALIZATION
 
+    
     end_time = time.clock()
     print(
         (
