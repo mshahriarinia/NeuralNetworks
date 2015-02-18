@@ -1,4 +1,4 @@
-"""
+"""  THIS IS ESSENTIALLY A SINGLE-LAYER LINEAR NETWORK WITH SOFTMAX AS OUTPUT loss is zero-one loss
 This tutorial introduces logistic regression using Theano and stochastic
 gradient descent.
 
