@@ -3,13 +3,13 @@ This tutorial introduces logistic regression using Theano and stochastic
 gradient descent.
 
 Logistic regression is a probabilistic, linear classifier. It is parametrized
-by a weight matrix :math:`W` and a bias vector :math:`b`. Classification is
+by a weight matrix `W` and a bias vector `b`. Classification is
 done by projecting data points onto a set of hyperplanes, the distance to
 which is used to determine a class membership probability.
 
-Mathematically, this can be written as:
+Mathematically, this can be written as a single layer neural network 
+with its final layer as softmax layer:
 
-.. math::
   P(Y=i|x, W,b) &= softmax_i(W x + b) \\
                 &= \frac {e^{W_i x + b_i}} {\sum_j e^{W_j x + b_j}}
 
@@ -17,14 +17,10 @@ Mathematically, this can be written as:
 The output of the model or prediction is then done by taking the argmax of
 the vector whose i'th element is P(Y=i|x).
 
-.. math::
-
   y_{pred} = argmax_i P(Y=i|x,W,b)
-
 
 This tutorial presents a stochastic gradient descent optimization method
 suitable for large datasets.
-
 
 References:
 
@@ -47,31 +43,25 @@ import theano.tensor as T
 
 
 class LogisticRegression(object):
-    """Multi-class Logistic Regression Class
-
-    The logistic regression is fully described by a weight matrix :math:`W`
-    and bias vector :math:`b`. Classification is done by projecting data
-    points onto a set of hyperplanes, the distance to which is used to
-    determine a class membership probability.
+    """Multi-class Logistic Regression Class : Here logistic regression is 
+     described with a weight matrix `W` and bias vector `b`. 
+    Classification is done by projecting data points onto a set of hyperplanes, 
+    the distance to which is used to determine a class membership probability.
     """
 
     def __init__(self, input, n_in, n_out):
-        """ Initialize the parameters of the logistic regression
+        """ Init
 
-        :type input: theano.tensor.TensorType
-        :param input: symbolic variable that describes the input of the
-                      architecture (one minibatch)
+        input:      theano.tensor.TensorType: symbolic variable that describes 
+                    the input of the architecture (one minibatch)
 
-        :type n_in: int
-        :param n_in: number of input units, the dimension of the space in
-                     which the datapoints lie
+        n_in: int:  number of input units, the dimension of the space in
+                    which the datapoints lie
 
-        :type n_out: int
-        :param n_out: number of output units, the dimension of the space in
-                      which the labels lie
-
+        n_out: int: number of output units, the dimension of the space in
+                    which the labels lie
         """
-        # start-snippet-1
+
         # initialize with 0 the weights W as a matrix of shape (n_in, n_out)
         self.W = theano.shared(
             value=numpy.zeros(
@@ -91,64 +81,43 @@ class LogisticRegression(object):
             borrow=True
         )
 
-        # symbolic expression for computing the matrix of class-membership
-        # probabilities
-        # Where:
-        # W is a matrix where column-k represent the separation hyper plain for
-        # class-k
-        # x is a matrix where row-j  represents input training sample-j
-        # b is a vector where element-k represent the free parameter of hyper
-        # plain-k
+        # symbolic theano expression for computing the matrix of class-membership
+        # probabilities:
+        # W is a matrix where column-k represent the separation hyper plain for class-k
+        # x is a matrix where row-j represents input training sample-j
+        # b is a vector where element-k represent the free parameter of hyper plain-k
         self.p_y_given_x = T.nnet.softmax(T.dot(input, self.W) + self.b)
 
-        # symbolic description of how to compute prediction as class whose
-        # probability is maximal
+        # symbolic theano expression to determine class with maximum probability
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
-        # end-snippet-1
 
         # parameters of the model
         self.params = [self.W, self.b]
 
     def negative_log_likelihood(self, y):
-        """Return the mean of the negative log-likelihood of the prediction
-        of this model under a given target distribution.
+        """ Return the mean of the negative log-likelihood of the prediction
 
-        .. math::
+        y: theano.tensor.TensorType: a vector of correct labels for each example
 
             \frac{1}{|\mathcal{D}|} \mathcal{L} (\theta=\{W,b\}, \mathcal{D}) =
             \frac{1}{|\mathcal{D}|} \sum_{i=0}^{|\mathcal{D}|}
                 \log(P(Y=y^{(i)}|x^{(i)}, W,b)) \\
             \ell (\theta=\{W,b\}, \mathcal{D})
 
-        :type y: theano.tensor.TensorType
-        :param y: corresponds to a vector that gives for each example the
-                  correct label
-
         Note: we use the mean instead of the sum so that
               the learning rate is less dependent on the batch size
         """
-        # start-snippet-2
-        # y.shape[0] is (symbolically) the number of rows in y, i.e.,
-        # number of examples (call it n) in the minibatch
-        # T.arange(y.shape[0]) is a symbolic vector which will contain
-        # [0,1,2,... n-1] T.log(self.p_y_given_x) is a matrix of
-        # Log-Probabilities (call it LP) with one row per example and
-        # one column per class LP[T.arange(y.shape[0]),y] is a vector
-        # v containing [LP[0,y[0]], LP[1,y[1]], LP[2,y[2]], ...,
-        # LP[n-1,y[n-1]]] and T.mean(LP[T.arange(y.shape[0]),y]) is
-        # the mean (across minibatch examples) of the elements in v,
-        # i.e., the mean log-likelihood across the minibatch.
+        # y.shape[0]: (symbolically) the number of rows in y, i.e., number of examples (n) in minibatch
+        # T.arange(y.shape[0]): a symbolic vector which will contain [0,1,2,... n-1] 
+        # T.log(self.p_y_given_x): a matrix of Log-Probabilities (LP) with one row per example and one column per class
+        # LP[T.arange(y.shape[0]),y]: a vector v containing [LP[0,y[0]], LP[1,y[1]], LP[2,y[2]], ..., LP[n-1,y[n-1]]] 
+        # T.mean(LP[T.arange(y.shape[0]),y]): the mean (across minibatch examples) of the elements in v, i.e., the mean log-likelihood across the minibatch.
         return -T.mean(T.log(self.p_y_given_x)[T.arange(y.shape[0]), y])
-        # end-snippet-2
 
     def errors(self, y):
-        """Return a float representing the number of errors in the minibatch
-        over the total number of examples of the minibatch ; zero one
-        loss over the size of the minibatch
+        """Return the average number of errors in the minibatch (zero-one loss)
 
-        :type y: theano.tensor.TensorType
-        :param y: corresponds to a vector that gives for each example the
-                  correct label
+        y: theano.tensor.TensorType: a vector of correct labels for each example
         """
 
         # check if y has same dimension of y_pred
@@ -161,64 +130,47 @@ class LogisticRegression(object):
         if y.dtype.startswith('int'):
             # the T.neq operator returns a vector of 0s and 1s, where 1
             # represents a mistake in prediction
-            return T.mean(T.neq(self.y_pred, y))
+            return T.mean(T.neq(self.y_pred, y)) # RETURN AVERAGE OF ERRORS
         else:
             raise NotImplementedError()
 
+# =============     END CLASS DEFINITION 
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+
+
+
+
+
+
+
+
+
 
 def load_data(dataset):
-    ''' Loads the dataset
+    ''' Loads the dataset (train, validation and test) into shared variables
 
-    :type dataset: string
-    :param dataset: the path to the dataset (here MNIST)
+    dataset: string: the path to the dataset (here MNIST)
     '''
 
-    #############
-    # LOAD DATA #
-    #############
-
-    # Download the MNIST dataset if it is not present
-    data_dir, data_file = os.path.split(dataset)
-    if data_dir == "" and not os.path.isfile(dataset):
-        # Check if dataset is in the data directory.
-        new_path = os.path.join(
-            os.path.split(__file__)[0],
-            "..",
-            "data",
-            dataset
-        )
-        if os.path.isfile(new_path) or data_file == 'mnist.pkl.gz':
-            dataset = new_path
-
-    if (not os.path.isfile(dataset)) and data_file == 'mnist.pkl.gz':
-        import urllib
-        origin = (
-            'http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz'
-        )
-        print 'Downloading data from %s' % origin
-        urllib.urlretrieve(origin, dataset)
-
-    print '... loading data'
-
-    # Load the dataset
     f = gzip.open(dataset, 'rb')
     train_set, valid_set, test_set = cPickle.load(f)
     f.close()
-    #train_set, valid_set, test_set format: tuple(input, target)
-    #input is an numpy.ndarray of 2 dimensions (a matrix)
-    #witch row's correspond to an example. target is a
-    #numpy.ndarray of 1 dimensions (vector)) that have the same length as
-    #the number of rows in the input. It should give the target
-    #target to the example with the same index in the input.
+    # train_set, valid_set, test_set : tuple(input, target)
+    # input is an numpy.ndarray of images (2d matrix) each row correspond to an example. 
+    # target is a numpy.ndarray a vector of target values for each image.
 
     def shared_dataset(data_xy, borrow=True):
-        """ Function that loads the dataset into shared variables
+        """ load the dataset into shared variables
 
-        The reason we store our dataset in shared variables is to allow
-        Theano to copy it into the GPU memory (when code is run on GPU).
-        Since copying data into the GPU is slow, copying a minibatch everytime
-        is needed (the default behaviour if the data is not in a shared
-        variable) would lead to a large decrease in performance.
+        Shared variables allow Theano to copy data into the GPU memory (when code is run on GPU).
+        Since copying data into the GPU is slow, copying a minibatch everytime would lead 
+        to a large decrease in performance.
         """
         data_x, data_y = data_xy
         shared_x = theano.shared(numpy.asarray(data_x,
@@ -227,13 +179,10 @@ def load_data(dataset):
         shared_y = theano.shared(numpy.asarray(data_y,
                                                dtype=theano.config.floatX),
                                  borrow=borrow)
-        # When storing data on the GPU it has to be stored as floats
-        # therefore we will store the labels as ``floatX`` as well
-        # (``shared_y`` does exactly that). But during our computations
-        # we need them as ints (we use labels as index, and if they are
-        # floats it doesn't make sense) therefore instead of returning
-        # ``shared_y`` we will have to cast it to int. This little hack
-        # lets ous get around this issue
+       
+        # When storing data on the GPU it has to be stored as floats (floatX). 
+        # But during our computations we need labels as ints (we use labels as index, and if they are
+        # floats it doesn't make sense). Therefore the cast y's to int. 
         return shared_x, T.cast(shared_y, 'int32')
 
     test_set_x, test_set_y = shared_dataset(test_set)
@@ -245,62 +194,62 @@ def load_data(dataset):
     return rval
 
 
-def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+
+
+
+
+
+
+
+
+# The actual parameter optimization
+def sgd_optimization_mnist(learning_rate=0.13, 
+                           n_epochs=1000,
                            dataset='mnist.pkl.gz',
                            batch_size=600):
     """
-    Demonstrate stochastic gradient descent optimization of a log-linear
-    model
-
-    This is demonstrated on MNIST.
-
-    :type learning_rate: float
-    :param learning_rate: learning rate used (factor for the stochastic
-                          gradient)
-
-    :type n_epochs: int
-    :param n_epochs: maximal number of epochs to run the optimizer
-
-    :type dataset: string
-    :param dataset: the path of the MNIST dataset file from
-                 http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz
-
+    stochastic gradient descent optimization of our model (log-linear model)
     """
+    
+    print '... loading data'
     datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
     test_set_x, test_set_y = datasets[2]
 
-    # compute number of minibatches for training, validation and testing
+    # set number of minibatches for each set
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0] / batch_size
     n_test_batches = test_set_x.get_value(borrow=True).shape[0] / batch_size
 
-    ######################
-    # BUILD ACTUAL MODEL #
-    ######################
-    print '... building the model'
+    print '... building symbolic model'
 
-    # allocate symbolic variables for the data
+    ############################ CREATE SYMBOLIC VARIABLES
+    ##################################################################
+    ##################################################################
+
+    # create symbolic variable for the indexing minibatches
     index = T.lscalar()  # index to a [mini]batch
 
-    # generate symbolic variables for input (x and y represent a
-    # minibatch)
-    x = T.matrix('x')  # data, presented as rasterized images
+    # create symbolic variables for input (x and y represent a minibatch)
+    x = T.matrix('x')  # data image
     y = T.ivector('y')  # labels, presented as 1D vector of [int] labels
 
-    # construct the logistic regression class  (initialize an instance)
-    # Each MNIST image has size 28*28
+    # initialize the logistic regression class (w and b). Each image is 28*28
     classifier = LogisticRegression(input=x, n_in=28 * 28, n_out=10)
 
-    # the cost we minimize during training is the negative log likelihood of
-    # the model in symbolic format
+    # Symbolic format of the cost function we minimize during training: 
+    # is the negative log likelihood of the model 
     cost = classifier.negative_log_likelihood(y)
 
-    # compiling a Theano function that computes the mistakes that are made by
-    # the model on a minibatch
-    test_model = theano.function(
+    # Compiled Theano function for model errors in a minibatch
+    test_model_error = theano.function(
         inputs=[index],
         outputs=classifier.errors(y),
         givens={
@@ -309,7 +258,7 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
         }
     )
 
-    validate_model = theano.function(
+    validation_model_error = theano.function(
         inputs=[index],
         outputs=classifier.errors(y),
         givens={
@@ -318,45 +267,38 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
         }
     )
 
-    # compute the gradient of cost with respect to theta = (W,b)
+    # compute the gradient of cost with respect to each parameter
     g_W = T.grad(cost=cost, wrt=classifier.W)
     g_b = T.grad(cost=cost, wrt=classifier.b)
 
-    # start-snippet-3
-    # specify how to update the parameters of the model as a list of
-    # (variable, update expression) pairs.
-    updates = [(classifier.W, classifier.W - learning_rate * g_W),
-               (classifier.b, classifier.b - learning_rate * g_b)]
-
-    # compiling a Theano function `train_model` that returns the cost, but in
-    # the same time updates the parameter of the model based on the rules
-    # defined in `updates`
+    # compiling a Theano function `train_model` that returns the cost, but ALSO
+    # update the parameter of the model based on the rules defined in `updates` (variable, update expression) pairs
     train_model = theano.function(
         inputs=[index],
         outputs=cost,
-        updates=updates,
+        updates=[(classifier.W, classifier.W - learning_rate * g_W),
+                 (classifier.b, classifier.b - learning_rate * g_b)],
         givens={
             x: train_set_x[index * batch_size: (index + 1) * batch_size],
             y: train_set_y[index * batch_size: (index + 1) * batch_size]
         }
     )
-    # end-snippet-3
 
-    ###############
-    # TRAIN MODEL #
-    ###############
+
+    ####################################      TRAIN MODEL
+    ##################################################################
+    ##################################################################
+
     print '... training the model'
+   
     # early-stopping parameters
+    
     patience = 5000  # look as this many examples regardless
-    patience_increase = 2  # wait this much longer when a new best is
-                                  # found
-    improvement_threshold = 0.995  # a relative improvement of this much is
-                                  # considered significant
+    patience_increase = 2  # wait this much longer when a new best is found
+    improvement_threshold = 0.995  # a relative improvement of this much is considered significant
+    # go through this many minibatche before checking the network on the validation set; in this case we check every epoch
     validation_frequency = min(n_train_batches, patience / 2)
-                                  # go through this many
-                                  # minibatche before checking the network
-                                  # on the validation set; in this case we
-                                  # check every epoch
+                                  
 
     best_validation_loss = numpy.inf
     test_score = 0.
@@ -367,81 +309,59 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     
     #=============      VISUALIZATION
     error_list = []
-
-    #pyplot.show()
-
     #=============      VISUALIZATION
-
-    
     
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in xrange(n_train_batches):
 
-            minibatch_avg_cost = train_model(minibatch_index)
-            # iteration number
-            iter = (epoch - 1) * n_train_batches + minibatch_index
+            train_model(minibatch_index) # discard train minibatch_avg_cost
 
-            if (iter + 1) % validation_frequency == 0:
+            iter_num = (epoch - 1) * n_train_batches + minibatch_index
+
+            if (iter_num + 1) % validation_frequency == 0:
+               
+                # VALIDATE
                 # compute zero-one loss on validation set
-                validation_losses = [validate_model(i)
+                validation_losses = [validation_model_error(i)
                                      for i in xrange(n_valid_batches)]
                 this_validation_loss = numpy.mean(validation_losses)
 
-                print(
-                    'epoch %i, minibatch %i/%i, validation error %f %%' %
-                    (
-                        epoch,
-                        minibatch_index + 1,
-                        n_train_batches,
-                        this_validation_loss * 100.
-                    )
-                )
+                print('epoch %i, minibatch %i/%i, validation error %f %%' % (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.))
 
-                # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-                    #improve patience if loss improvement is good enough
-                    if this_validation_loss < best_validation_loss *  \
-                       improvement_threshold:
-                        patience = max(patience, iter * patience_increase)
+                    if this_validation_loss < best_validation_loss * improvement_threshold:
+                        patience = max(patience, iter_num * patience_increase)
 
                     best_validation_loss = this_validation_loss
+                   
                     # test it on the test set
-
-                    test_losses = [test_model(i)
-                                   for i in xrange(n_test_batches)]
+                    test_losses = [test_model_error(i) for i in xrange(n_test_batches)]
                     test_score = numpy.mean(test_losses)
 
-                    print(
-                        (
-                            '     epoch %i, minibatch %i/%i, test error of'
-                            ' best model %f %%'
-                        ) %
-                        (
-                            epoch,
-                            minibatch_index + 1,
-                            n_train_batches,
-                            test_score * 100.
-                        )
-                    )
+                    print('     epoch %i, minibatch %i/%i, test error of best model UPDATED %f %%' % (epoch, minibatch_index + 1, n_train_batches, test_score * 100.))
 
-            if patience <= iter:
+            if patience <= iter_num:
                 done_looping = True
                 break
-        
-        #======================== visualize weight
-        
 
 
-       
-
-        
-        #======================== visualize weight
-
-        # for ERROR VISULATIONS after all done
+        # Keep each epoch's ERROR to visualize them all at the end
         error_list.append(best_validation_loss)
-        # =============================                       MINIBATCH LOOP
-    # =====================================                      EPOCH LOOP
+        # =============================                       EPOCH LOOP
+    
+    print "LOOP FINISHED\n"         
+    end_time = time.clock()
+    print(
+        (
+            'Optimization complete with best validation score of %f %%,'
+            'with test performance %f %%'
+        )
+        % (best_validation_loss * 100., test_score * 100.)
+    )
+    print 'The code run for %d epochs, with %f epochs/sec' % (epoch, 1. * epoch / (end_time - start_time))
+    print >> sys.stderr, ('Total train/validation time of ' + os.path.split(__file__)[1] + ' ran for %.1fs' % ((end_time - start_time)))
+   
     
     
     # ==========================================  ERROR VISUALIZATION
@@ -455,132 +375,52 @@ def sgd_optimization_mnist(learning_rate=0.13, n_epochs=1000,
     p.plot(x,y, color='red', lw=2)
     p.show()
     
-    ########### VISUALIZE WEIGHTS 1
+    ########### VISUALIZE WEIGHTS
     
-    #from matplotlib import mpl,pyplot
     import matplotlib as mpl
     from matplotlib import pyplot
     
     fig = pyplot.figure(1)
-    ax= fig.gca()
+    cmap = mpl.colors.LinearSegmentedColormap.from_list('my_colormap', ['black','white'], 256)
     
     zvals = classifier.W.get_value()
-
     zvals = zvals.reshape(28,28,10)
-    a1 = zvals[:,:,1].reshape(28,28)
-        
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
-                                               ['black','white'],
-                                               256)
+
+    ########### VISUALIZE WEIGHTS 
     
-    img2 = pyplot.imshow(a1,
-                        interpolation='nearest',
-                        cmap = cmap2,
-                        origin='lower')
+    a1 = zvals[:,:,1].reshape(28,28)
+    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
     fig.canvas.draw()
-  
-    ########### VISUALIZE WEIGHTS 2
     
     fig = pyplot.figure(2)
-    ax= fig.gca()
-    
-    zvals = classifier.W.get_value()
-
-    zvals = zvals.reshape(28,28,10)
     a1 = zvals[:,:,2].reshape(28,28)
-        
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
-                                               ['black','white'],
-                                               256)
-    
-    img2 = pyplot.imshow(a1,
-                        interpolation='nearest',
-                        cmap = cmap2,
-                        origin='lower')
+    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
     fig.canvas.draw()
-    
-    ########### VISUALIZE WEIGHTS 3
-    
+
     fig = pyplot.figure(3)
-    ax= fig.gca()
-    
-    zvals = classifier.W.get_value()
-
-    zvals = zvals.reshape(28,28,10)
     a1 = zvals[:,:,3].reshape(28,28)
-        
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
-                                               ['black','white'],
-                                               256)
-    
-    img2 = pyplot.imshow(a1,
-                        interpolation='nearest',
-                        cmap = cmap2,
-                        origin='lower')
+    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
     fig.canvas.draw()
-
-    ########### VISUALIZE WEIGHTS 4
 
     fig = pyplot.figure(4)
-    ax= fig.gca()
-    
-    zvals = classifier.W.get_value()
-
-    zvals = zvals.reshape(28,28,10)
     a1 = zvals[:,:,4].reshape(28,28)
-        
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
-                                               ['black','white'],
-                                               256)
-    
-    img2 = pyplot.imshow(a1,
-                        interpolation='nearest',
-                        cmap = cmap2,
-                        origin='lower')
+    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
     fig.canvas.draw()
 
-    ########### VISUALIZE WEIGHTS 5
- 
     fig = pyplot.figure(5)
-    ax= fig.gca()
-    
-    zvals = classifier.W.get_value()
-
-    zvals = zvals.reshape(28,28,10)
     a1 = zvals[:,:,5].reshape(28,28)
-        
-    cmap2 = mpl.colors.LinearSegmentedColormap.from_list('my_colormap',
-                                               ['black','white'],
-                                               256)
-    
-    img2 = pyplot.imshow(a1,
-                        interpolation='nearest',
-                        cmap = cmap2,
-                        origin='lower')
-    fig.canvas.draw()
-    pyplot.show()     
+    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
+    fig.canvas.draw()     
 
+    pyplot.show()
     ########### VISUALIZE WEIGHTS
-
-
     # ==========================================  ERROR VISUALIZATION
 
     
-    end_time = time.clock()
-    print(
-        (
-            'Optimization complete with best validation score of %f %%,'
-            'with test performance %f %%'
-        )
-        % (best_validation_loss * 100., test_score * 100.)
-    )
-    print 'The code run for %d epochs, with %f epochs/sec' % (
-        epoch, 1. * epoch / (end_time - start_time))
-    print >> sys.stderr, ('The code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.1fs' % ((end_time - start_time)))
+
     
     
 
 if __name__ == '__main__':
+    print "Hi!"
     sgd_optimization_mnist()
