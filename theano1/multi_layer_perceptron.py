@@ -1,14 +1,10 @@
 """
 This tutorial introduces the multilayer perceptron using Theano.
 
- A multilayer perceptron is a logistic regressor where
-instead of feeding the input to the logistic regression you insert a
-intermediate layer, called the hidden layer, that has a nonlinear
-activation function (usually tanh or sigmoid) . One can use many such
-hidden layers making the architecture deep. The tutorial will also tackle
-the problem of MNIST digit classification.
-
-.. math::
+ A multilayer perceptron is a logistic regressor where instead of feeding the input to the logistic regression,
+ you insert a intermediate layer, called the hidden layer, that has a nonlinear activation function 
+ (usually tanh or sigmoid). One can use many such hidden layers making the architecture deep. 
+ The tutorial will also tackle the problem of MNIST digit classification.
 
     f(x) = G( b^{(2)} + W^{(2)}( s( b^{(1)} + W^{(1)} x))),
 
@@ -16,7 +12,6 @@ References:
 
     - textbooks: "Pattern Recognition and Machine Learning" -
                  Christopher M. Bishop, section 5
-
 """
 __docformat__ = 'restructedtext en'
 
@@ -30,63 +25,52 @@ import numpy
 import theano
 import theano.tensor as T
 
-
+#####################      LOAD LOGISTIC REGRESSION LAYER FROM logistic_sgd.py
+######################################################################
+######################################################################
 from logistic_sgd import LogisticRegression, load_data
 
-
-# start-snippet-1
+####################           HIDDEN LAYER CLASS
+######################################################################
+######################################################################
+######################################################################
+######################################################################
 class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, W=None, b=None,
                  activation=T.tanh):
         """
-        Typical hidden layer of a MLP: units are fully-connected and have
-        sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
-        and the bias vector b is of shape (n_out,).
+        Typical hidden layer of a MLP: units are fully-connected and have sigmoidal activation function. 
+        Weight matrix W is of shape (n_in,n_out) and the bias vector b is of shape (n_out,).
 
         NOTE : The nonlinearity used here is tanh
 
         Hidden unit activation is given by: tanh(dot(input,W) + b)
 
-        :type rng: numpy.random.RandomState
-        :param rng: a random number generator used to initialize weights
+        rng: numpy.random.RandomState: a random number generator used to initialize weights
+        
+        input: theano.tensor.dmatrix: a symbolic tensor of shape (n_examples, n_in)
+        
+        n_in: int: dimensionality of input
+        
+        n_out: int: number of hidden units
 
-        :type input: theano.tensor.dmatrix
-        :param input: a symbolic tensor of shape (n_examples, n_in)
-
-        :type n_in: int
-        :param n_in: dimensionality of input
-
-        :type n_out: int
-        :param n_out: number of hidden units
-
-        :type activation: theano.Op or function
-        :param activation: Non linearity to be applied in the hidden
-                           layer
+        activation: theano.Op or function: Non linearity to be applied in the hidden layer. Here we apply `tanh`
         """
         self.input = input
-        # end-snippet-1
 
-        # `W` is initialized with `W_values` which is uniformely sampled
-        # from sqrt(-6./(n_in+n_hidden)) and sqrt(6./(n_in+n_hidden))
-        # for tanh activation function
-        # the output of uniform if converted using asarray to dtype
-        # theano.config.floatX so that the code is runable on GPU
-        # Note : optimal initialization of weights is dependent on the
-        #        activation function used (among other things).
-        #        For example, results presented in [Xavier10] suggest that you
-        #        should use 4 times larger initial weights for sigmoid
-        #        compared to tanh
-        #        We have no info for other function, so we use the same as
-        #        tanh.
+        # `W` is uniformely sampled
+        # The output of uniform is converted to theano.config.floatX so that the code is runable on GPU
         if W is None:
             W_values = numpy.asarray(
                 rng.uniform(
-                    low=-numpy.sqrt(6. / (n_in + n_out)),
-                    high=numpy.sqrt(6. / (n_in + n_out)),
+                    low = -numpy.sqrt(6. / (n_in + n_out)),
+                    high = numpy.sqrt(6. / (n_in + n_out)),
                     size=(n_in, n_out)
                 ),
                 dtype=theano.config.floatX
             )
+            
+            # [Xavier10] suggests to use 4 times larger initial weights for sigmoid compared to tanh
             if activation == theano.tensor.nnet.sigmoid:
                 W_values *= 4
 
@@ -108,7 +92,15 @@ class HiddenLayer(object):
         self.params = [self.W, self.b]
 
 
-# start-snippet-2
+# =============     END CLASS DEFINITION - HiddenLayer
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+
 class MLP(object):
     """Multi-Layer Perceptron Class
 
@@ -162,7 +154,6 @@ class MLP(object):
             n_in=n_hidden,
             n_out=n_out
         )
-        # end-snippet-2 start-snippet-3
         # L1 norm ; one regularization option is to enforce L1 norm to
         # be small
         self.L1 = (
@@ -189,8 +180,15 @@ class MLP(object):
         # the parameters of the model are the parameters of the two layer it is
         # made out of
         self.params = self.hiddenLayer.params + self.logRegressionLayer.params
-        # end-snippet-3
 
+# =============     END CLASS DEFINITION - MLP
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
