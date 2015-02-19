@@ -39,27 +39,19 @@ class HiddenLayer(object):
     def __init__(self, rng, input, n_in, n_out, W=None, b=None,
                  activation=T.tanh):
         """
-        Typical hidden layer of a MLP: units are fully-connected and have sigmoidal activation function. 
-        Weight matrix W is of shape (n_in,n_out) and the bias vector b is of shape (n_out,).
-
-        NOTE : The nonlinearity used here is tanh
-
-        Hidden unit activation is given by: tanh(dot(input,W) + b)
+        Typical hidden layer of a MLP: units fully-connected and have sigmoid/tanh activation function. 
+        Weight is (n_in,n_out) matrix and bias is (n_out,) vector.
+        Hidden unit activation: tanh(dot(input,W) + b)
 
         rng: numpy.random.RandomState: a random number generator used to initialize weights
-        
         input: theano.tensor.dmatrix: a symbolic tensor of shape (n_examples, n_in)
-        
         n_in: int: dimensionality of input
-        
         n_out: int: number of hidden units
-
         activation: theano.Op or function: Non linearity to be applied in the hidden layer. Here we apply `tanh`
         """
         self.input = input
 
-        # `W` is uniformely sampled
-        # The output of uniform is converted to theano.config.floatX so that the code is runable on GPU
+        # `W` is uniformely sampled, The output is converted to theano.config.floatX so that code is runable on GPU
         if W is None:
             W_values = numpy.asarray(
                 rng.uniform(
@@ -115,30 +107,15 @@ class MLP(object):
     def __init__(self, rng, input, n_in, n_hidden, n_out):
         """Initialize the parameters for the multilayer perceptron
 
-        :type rng: numpy.random.RandomState
-        :param rng: a random number generator used to initialize weights
-
-        :type input: theano.tensor.TensorType
-        :param input: symbolic variable that describes the input of the
-        architecture (one minibatch)
-
-        :type n_in: int
-        :param n_in: number of input units, the dimension of the space in
-        which the datapoints lie
-
-        :type n_hidden: int
-        :param n_hidden: number of hidden units
-
-        :type n_out: int
-        :param n_out: number of output units, the dimension of the space in
-        which the labels lie
-
+        rng: numpy.random.RandomState: a random number generator used to initialize weights
+        input: theano.tensor.TensorType: symbolic variable that describes the input of the architecture (one minibatch)
+        n_in: int: number of input units, the dimension of the space in which the datapoints lie
+        n_hidden: int: number of hidden units
+        n_out: int: number of output units, the dimension of the space in which the labels lie
         """
 
-        # Since we are dealing with a one hidden layer MLP, this will translate
-        # into a HiddenLayer with a tanh activation function connected to the
-        # LogisticRegression layer; the activation function can be replaced by
-        # sigmoid or any other nonlinear function
+        # Since we are dealing with a one hidden layer MLP, this will translate into a HiddenLayer with 
+        # a tanh activation function (or other activation functions) connected to the LogisticRegression layer
         self.hiddenLayer = HiddenLayer(
             rng=rng,
             input=input,
@@ -147,8 +124,7 @@ class MLP(object):
             activation=T.tanh
         )
 
-        # The logistic regression layer gets as input the hidden units
-        # of the hidden layer
+        # The logistic regression layer gets as input the hidden units of the hidden layer
         self.logRegressionLayer = LogisticRegression(
             input=self.hiddenLayer.output,
             n_in=n_hidden,
@@ -190,34 +166,17 @@ class MLP(object):
 ##################################################################
 ##################################################################
 
-def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
+# actual parameter optimization
+def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
     """
-    Demonstrate stochastic gradient descent optimization for a multilayer
-    perceptron
+    Stochastic gradient descent optimization for a multilayer perceptron on MNIST dataset
 
-    This is demonstrated on MNIST.
-
-    :type learning_rate: float
-    :param learning_rate: learning rate used (factor for the stochastic
-    gradient
-
-    :type L1_reg: float
-    :param L1_reg: L1-norm's weight when added to the cost (see
-    regularization)
-
-    :type L2_reg: float
-    :param L2_reg: L2-norm's weight when added to the cost (see
-    regularization)
-
-    :type n_epochs: int
-    :param n_epochs: maximal number of epochs to run the optimizer
-
-    :type dataset: string
-    :param dataset: the path of the MNIST dataset file from
-                 http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz
-
-
+    learning_rate: float: learning rate used (factor for the stochastic gradient)
+    L1_reg: float: L1-norm's weight when added to the cost
+    L2_reg: float: L2-norm's weight when added to the cost
+    n_epochs: int: maximal number of epochs to run the optimizer
+    dataset: string: path of file http://www.iro.umontreal.ca/~lisa/deep/data/mnist/mnist.pkl.gz
    """
     datasets = load_data(dataset)
 
@@ -230,16 +189,15 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0] / batch_size
     n_test_batches = test_set_x.get_value(borrow=True).shape[0] / batch_size
 
-    ######################
-    # BUILD ACTUAL MODEL #
-    ######################
+    ############################ CREATE SYMBOLIC VARIABLES
+    ##################################################################
+    ##################################################################
     print '... building the model'
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
     x = T.matrix('x')  # the data is presented as rasterized images
-    y = T.ivector('y')  # the labels are presented as 1D vector of
-                        # [int] labels
+    y = T.ivector('y')  # the labels are presented as 1D vector of [int] labels
 
     rng = numpy.random.RandomState(1234)
 
@@ -252,20 +210,16 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
         n_out=10
     )
 
-    # start-snippet-4
-    # the cost we minimize during training is the negative log likelihood of
-    # the model plus the regularization terms (L1 and L2); cost is expressed
-    # here symbolically
+    # the cost we minimize during training is the negative log likelihood of the model plus the regularization terms (L1 and L2); 
+    # cost is expressed here symbolically
     cost = (
         classifier.negative_log_likelihood(y)
         + L1_reg * classifier.L1
         + L2_reg * classifier.L2_sqr
     )
-    # end-snippet-4
 
-    # compiling a Theano function that computes the mistakes that are made
-    # by the model on a minibatch
-    test_model = theano.function(
+    # Symbolic function that computes the mistakes that are made by the model on a minibatch
+    test_model_error = theano.function(
         inputs=[index],
         outputs=classifier.errors(y),
         givens={
@@ -274,7 +228,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
         }
     )
 
-    validate_model = theano.function(
+    validate_model_error = theano.function(
         inputs=[index],
         outputs=classifier.errors(y),
         givens={
@@ -283,26 +237,20 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
         }
     )
 
-    # start-snippet-5
-    # compute the gradient of cost with respect to theta (sotred in params)
+    # compute the gradient of cost with respect to each parameter
     # the resulting gradients will be stored in a list gparams
     gparams = [T.grad(cost, param) for param in classifier.params]
 
-    # specify how to update the parameters of the model as a list of
-    # (variable, update expression) pairs
-
-    # given two list the zip A = [a1, a2, a3, a4] and B = [b1, b2, b3, b4] of
-    # same length, zip generates a list C of same size, where each element
-    # is a pair formed from the two lists :
-    #    C = [(a1, b1), (a2, b2), (a3, b3), (a4, b4)]
+    # specify how to update the parameters of the model as a list of (variable, update expression) pairs
+    # >>> x = [1, 2, 3]; y = [4, 5, 6]; zipped = zip(x, y)
+    # >>> zipped
+    # [(1, 4), (2, 5), (3, 6)]
     updates = [
         (param, param - learning_rate * gparam)
         for param, gparam in zip(classifier.params, gparams)
     ]
 
-    # compiling a Theano function `train_model` that returns the cost, but
-    # in the same time updates the parameter of the model based on the rules
-    # defined in `updates`
+    # Symbolic function that returns the cost, and updates the parameter of the model
     train_model = theano.function(
         inputs=[index],
         outputs=cost,
@@ -312,91 +260,93 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
             y: train_set_y[index * batch_size: (index + 1) * batch_size]
         }
     )
-    # end-snippet-5
 
-    ###############
-    # TRAIN MODEL #
-    ###############
+
+    ####################################      TRAIN MODEL
+    ##################################################################
+    ##################################################################
     print '... training'
 
     # early-stopping parameters
+    
     patience = 10000  # look as this many examples regardless
-    patience_increase = 2  # wait this much longer when a new best is
-                           # found
-    improvement_threshold = 0.995  # a relative improvement of this much is
-                                   # considered significant
+    patience_increase = 2  # wait this much longer when a new best is found
+    improvement_threshold = 0.995  # a relative improvement of this much is considered significant
+    # go through this many minibatche before checking the network on the validation set; in this case we check every epoch
     validation_frequency = min(n_train_batches, patience / 2)
-                                  # go through this many
-                                  # minibatche before checking the network
-                                  # on the validation set; in this case we
-                                  # check every epoch
+
 
     best_validation_loss = numpy.inf
     best_iter = 0
     test_score = 0.
     start_time = time.clock()
 
-    epoch = 0
     done_looping = False
+    epoch = 0
+
+    #=============      VISUALIZATION
+    error_list = []
+    #=============      VISUALIZATION
 
     while (epoch < n_epochs) and (not done_looping):
         epoch = epoch + 1
         for minibatch_index in xrange(n_train_batches):
 
-            minibatch_avg_cost = train_model(minibatch_index)
-            # iteration number
-            iter = (epoch - 1) * n_train_batches + minibatch_index
+            train_model(minibatch_index)  # discard train minibatch_avg_cost
+            iter_num = (epoch - 1) * n_train_batches + minibatch_index
 
-            if (iter + 1) % validation_frequency == 0:
+            if (iter_num + 1) % validation_frequency == 0:
+                
+                # VALIDATE
                 # compute zero-one loss on validation set
-                validation_losses = [validate_model(i) for i
+                validation_losses = [validate_model_error(i) for i
                                      in xrange(n_valid_batches)]
                 this_validation_loss = numpy.mean(validation_losses)
 
-                print(
-                    'epoch %i, minibatch %i/%i, validation error %f %%' %
-                    (
-                        epoch,
-                        minibatch_index + 1,
-                        n_train_batches,
-                        this_validation_loss * 100.
-                    )
-                )
+                print('epoch %i, minibatch %i/%i, validation error %f %%' % (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.))
 
-                # if we got the best validation score until now
                 if this_validation_loss < best_validation_loss:
-                    #improve patience if loss improvement is good enough
-                    if (
-                        this_validation_loss < best_validation_loss *
-                        improvement_threshold
-                    ):
-                        patience = max(patience, iter * patience_increase)
+                    if this_validation_loss < best_validation_loss * improvement_threshold:
+                        patience = max(patience, iter_num * patience_increase)
 
                     best_validation_loss = this_validation_loss
-                    best_iter = iter
+                    best_iter = iter_num
 
                     # test it on the test set
-                    test_losses = [test_model(i) for i
-                                   in xrange(n_test_batches)]
+                    test_losses = [test_model_error(i) for i in xrange(n_test_batches)]
                     test_score = numpy.mean(test_losses)
 
-                    print(('     epoch %i, minibatch %i/%i, test error of '
-                           'best model %f %%') %
-                          (epoch, minibatch_index + 1, n_train_batches,
-                           test_score * 100.))
+                    print('     epoch %i, minibatch %i/%i, test error of best model UPDATED %f %%' % (epoch, minibatch_index + 1, n_train_batches, test_score * 100.))
 
-            if patience <= iter:
+            if patience <= iter_num:
                 done_looping = True
                 break
 
-    end_time = time.clock()
-    print(('Optimization complete. Best validation score of %f %% '
-           'obtained at iteration %i, with test performance %f %%') %
-          (best_validation_loss * 100., best_iter + 1, test_score * 100.))
-    print >> sys.stderr, ('The code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.2fm' % ((end_time - start_time) / 60.))
+        # Keep each epoch's ERROR to visualize them all at the end
+        error_list.append(best_validation_loss)
+        # =============================                       EPOCH LOOP
 
+
+    print "LOOP FINISHED\n"         
+    end_time = time.clock()
+    print('Optimization complete. Best validation score of %f %% obtained at iteration %i, with test performance %f %%' % (best_validation_loss * 100., best_iter + 1, test_score * 100.))
+    print >> sys.stderr, ('The code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((end_time - start_time) / 60.))
+
+    # ==========================================  ERROR VISUALIZATION  
+    import numpy as nx
+    import pylab as p
+    
+    x = nx.arange(0, epoch)
+    y = error_list 
+    
+    p.plot(x,y, color='red', lw=2)
+    p.show()
+    # ==========================================  ERROR VISUALIZATION
+
+    
+
+    
+    
 
 if __name__ == '__main__':
-    test_mlp()
+    mlp_sgd_optimization_mnist()
