@@ -12,6 +12,11 @@ References:
 
     - textbooks: "Pattern Recognition and Machine Learning" -
                  Christopher M. Bishop, section 5
+
+NOTES:
+    It is essentially symbolic replacement of the linear layer of logistic_sgd.py to hiddenlayer class here and 
+    calculating gradients also symbolically and applying them all together in train_model symbolic function in
+    the actual sgd loop.
 """
 __docformat__ = 'restructedtext en'
 
@@ -121,7 +126,7 @@ class MLP(object):
             activation=T.tanh
         )
 
-        # The logistic regression layer gets as input the hidden units of the hidden layer
+        # The logistic regression layer gets as input the hidden units of the hidden layer    ############ THESE ARE ALL SYMBOLIC REPLACEMENTS OF PARAMETERS AND FUNCTIONS WITH EACH OTHER
         self.logRegressionLayer = LogisticRegression(
             input_data=self.hiddenLayer.output_data,
             n_in=n_hidden,
@@ -235,7 +240,7 @@ def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n
 
     # compute the gradient of cost with respect to each parameter
     # the resulting gradients will be stored in a list gparams
-    gparams = [T.grad(cost, param) for param in classifier.params]
+    g_params = [T.grad(cost, param) for param in classifier.params]
 
     # specify how to update the parameters of the model as a list of (variable, update expression) pairs
     # >>> x = [1, 2, 3]; y = [4, 5, 6]; zipped = zip(x, y)
@@ -243,7 +248,7 @@ def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n
     # [(1, 4), (2, 5), (3, 6)]
     updates = [
         (param, param - learning_rate * gparam)
-        for param, gparam in zip(classifier.params, gparams)
+        for param, gparam in zip(classifier.params, g_params)
     ]
 
     # Symbolic function that returns the cost, and updates the parameter of the model
