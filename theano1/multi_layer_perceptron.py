@@ -36,30 +36,29 @@ from logistic_sgd import LogisticRegression, load_data
 ######################################################################
 ######################################################################
 class HiddenLayer(object):
-    def __init__(self, rng, input, n_in, n_out, W=None, b=None,
+    """ Typical hidden layer of a MLP: units fully-connected and have sigmoid/tanh activation function. 
+        Weight is (n_in,n_out) matrix and bias is (n_out,) vector. each node's activation: tanh(dot(input,W) + b)
+    """
+    def __init__(self, rng, input_data, n_in, n_out, W=None, b=None,
                  activation=T.tanh):
         """
-        Typical hidden layer of a MLP: units fully-connected and have sigmoid/tanh activation function. 
-        Weight is (n_in,n_out) matrix and bias is (n_out,) vector.
-        Hidden unit activation: tanh(dot(input,W) + b)
-
         rng: numpy.random.RandomState: a random number generator used to initialize weights
-        input: theano.tensor.dmatrix: a symbolic tensor of shape (n_examples, n_in)
+        input_data: theano.tensor.dmatrix: a symbolic tensor of shape (n_examples, n_in)
         n_in: int: dimensionality of input
         n_out: int: number of hidden units
         activation: theano.Op or function: Non linearity to be applied in the hidden layer. Here we apply `tanh`
         """
-        self.input = input
+        self.input_data = input_data
 
         # `W` is uniformely sampled, The output is converted to theano.config.floatX so that code is runable on GPU
         if W is None:
             W_values = numpy.asarray(
                 rng.uniform(
-                    low = -numpy.sqrt(6. / (n_in + n_out)),
-                    high = numpy.sqrt(6. / (n_in + n_out)),
-                    size=(n_in, n_out)
+                    low  = -numpy.sqrt(6. / (n_in + n_out)),
+                    high =  numpy.sqrt(6. / (n_in + n_out)),
+                    size = (n_in, n_out)
                 ),
-                dtype=theano.config.floatX
+                dtype=theano.config.floatX  # @UndefinedVariable
             )
             
             # [Xavier10] suggests to use 4 times larger initial weights for sigmoid compared to tanh
@@ -69,14 +68,14 @@ class HiddenLayer(object):
             W = theano.shared(value=W_values, name='W', borrow=True)
 
         if b is None:
-            b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)
+            b_values = numpy.zeros((n_out,), dtype=theano.config.floatX)  # @UndefinedVariable
             b = theano.shared(value=b_values, name='b', borrow=True)
 
         self.W = W
         self.b = b
 
-        lin_output = T.dot(input, self.W) + self.b
-        self.output = (
+        lin_output = T.dot(input_data, self.W) + self.b
+        self.output_data = (
             lin_output if activation is None
             else activation(lin_output)
         )
@@ -97,18 +96,16 @@ class MLP(object):
     """Multi-Layer Perceptron Class
 
     A multilayer perceptron is a feedforward artificial neural network model
-    that has one layer or more of hidden units and nonlinear activations.
-    Intermediate layers usually have as activation function tanh or the
-    sigmoid function (defined here by a ``HiddenLayer`` class)  while the
-    top layer is a softamx layer (defined here by a ``LogisticRegression``
-    class).
+    that has one or more layers of hidden units with nonlinear activations (sigmoid or tanh).
+    here defined by a ``HiddenLayer`` class)  while the top layer is a softamx layer (defined 
+    here by a ``LogisticRegression`` class).
     """
 
-    def __init__(self, rng, input, n_in, n_hidden, n_out):
+    def __init__(self, rng, input_data, n_in, n_hidden, n_out):
         """Initialize the parameters for the multilayer perceptron
 
         rng: numpy.random.RandomState: a random number generator used to initialize weights
-        input: theano.tensor.TensorType: symbolic variable that describes the input of the architecture (one minibatch)
+        input_data: theano.tensor.TensorType: symbolic variable that describes the input of the architecture (one minibatch)
         n_in: int: number of input units, the dimension of the space in which the datapoints lie
         n_hidden: int: number of hidden units
         n_out: int: number of output units, the dimension of the space in which the labels lie
@@ -118,7 +115,7 @@ class MLP(object):
         # a tanh activation function (or other activation functions) connected to the LogisticRegression layer
         self.hiddenLayer = HiddenLayer(
             rng=rng,
-            input=input,
+            input_data=input_data,
             n_in=n_in,
             n_out=n_hidden,
             activation=T.tanh
@@ -126,12 +123,11 @@ class MLP(object):
 
         # The logistic regression layer gets as input the hidden units of the hidden layer
         self.logRegressionLayer = LogisticRegression(
-            input=self.hiddenLayer.output,
+            input_data=self.hiddenLayer.output_data,
             n_in=n_hidden,
             n_out=n_out
         )
-        # L1 norm ; one regularization option is to enforce L1 norm to
-        # be small
+        # L1 norm ; one regularization option is to enforce L1 norm to be small
         self.L1 = (
             abs(self.hiddenLayer.W).sum()
             + abs(self.logRegressionLayer.W).sum()
@@ -204,7 +200,7 @@ def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n
     # construct the MLP class
     classifier = MLP(
         rng=rng,
-        input=x,
+        input_data=x,
         n_in=28 * 28,
         n_hidden=n_hidden,
         n_out=10

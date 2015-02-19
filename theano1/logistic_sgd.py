@@ -49,10 +49,10 @@ class LogisticRegression(object):
     the distance to which is used to determine a class membership probability.
     """
 
-    def __init__(self, input, n_in, n_out):
+    def __init__(self, input_data, n_in, n_out):
         """ Init
 
-        input:      theano.tensor.TensorType: symbolic variable that describes 
+        input_data:      theano.tensor.TensorType: symbolic variable that describes 
                     the input of the architecture (one minibatch)
 
         n_in: int:  number of input units, the dimension of the space in
@@ -66,7 +66,7 @@ class LogisticRegression(object):
         self.W = theano.shared(
             value=numpy.zeros(
                 (n_in, n_out),
-                dtype=theano.config.floatX
+                dtype=theano.config.floatX  # @UndefinedVariable
             ),
             name='W',
             borrow=True
@@ -75,7 +75,7 @@ class LogisticRegression(object):
         self.b = theano.shared(
             value=numpy.zeros(
                 (n_out,),
-                dtype=theano.config.floatX
+                dtype=theano.config.floatX  # @UndefinedVariable
             ),
             name='b',
             borrow=True
@@ -86,7 +86,7 @@ class LogisticRegression(object):
         # W is a matrix where column-k represent the separation hyper plain for class-k
         # x is a matrix where row-j represents input training sample-j
         # b is a vector where element-k represent the free parameter of hyper plain-k
-        self.p_y_given_x = T.nnet.softmax(T.dot(input, self.W) + self.b)
+        self.p_y_given_x = T.nnet.softmax(T.dot(input_data, self.W) + self.b)
 
         # symbolic theano expression to determine class with maximum probability
         self.y_pred = T.argmax(self.p_y_given_x, axis=1)
@@ -174,10 +174,10 @@ def load_data(dataset):
         """
         data_x, data_y = data_xy
         shared_x = theano.shared(numpy.asarray(data_x,
-                                               dtype=theano.config.floatX),
+                                               dtype=theano.config.floatX),  # @UndefinedVariable
                                  borrow=borrow)
         shared_y = theano.shared(numpy.asarray(data_y,
-                                               dtype=theano.config.floatX),
+                                               dtype=theano.config.floatX),  # @UndefinedVariable
                                  borrow=borrow)
        
         # When storing data on the GPU it has to be stored as floats (floatX). 
