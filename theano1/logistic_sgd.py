@@ -42,6 +42,13 @@ import theano
 import theano.tensor as T
 
 
+
+
+import matplotlib as mpl
+from matplotlib import pyplot
+import pylab
+
+
 class LogisticRegression(object):
     """Multi-class Logistic Regression Class : Here logistic regression is 
      described with a weight matrix `W` and bias vector `b`. 
@@ -133,6 +140,29 @@ class LogisticRegression(object):
             return T.mean(T.neq(self.y_pred, y)) # RETURN AVERAGE OF ERRORS
         else:
             raise NotImplementedError()
+
+    def visualizeWeights(self):
+        """
+           The previous layer what ever it is should be a square to be visualizeable as a square matrix
+        """
+        cmap = mpl.colors.LinearSegmentedColormap.from_list('my_colormap', ['black','white'], 256)
+        fig = pyplot.figure()
+        fig.suptitle("Logistic Regression Weights", fontsize=16)
+        
+        zvals = self.W.get_value()
+        leng=numpy.size(zvals)
+        dimension = int(numpy.sqrt(leng/10))
+        zvals = zvals.reshape(dimension,dimension,10)
+            
+        digit=0
+        while (digit<10):
+            ax = pylab.subplot(2,5,digit+1)
+            ax.set_title(digit)
+            a1 = zvals[:,:,digit].reshape(dimension,dimension)
+            pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
+            digit+=1
+        
+        pyplot.show()
 
 # =============     END CLASS DEFINITION 
 ##################################################################
@@ -242,7 +272,7 @@ def sgd_optimization_mnist(learning_rate=0.13,
     y = T.ivector('y')  # labels, presented as 1D vector of [int] labels
 
     # initialize the logistic regression class (w and b). Each image is 28*28
-    classifier = LogisticRegression(input=x, n_in=28 * 28, n_out=10)
+    classifier = LogisticRegression(input_data=x, n_in=28 * 28, n_out=10)
 
     # Symbolic format of the cost function we minimize during training: 
     # is the negative log likelihood of the model 
@@ -366,45 +396,7 @@ def sgd_optimization_mnist(learning_rate=0.13,
     p.plot(x,y, color='red', lw=2)
     p.show()
     
-    ########### VISUALIZE WEIGHTS
-    
-    import matplotlib as mpl
-    from matplotlib import pyplot
-    
-    fig = pyplot.figure(1)
-    cmap = mpl.colors.LinearSegmentedColormap.from_list('my_colormap', ['black','white'], 256)
-    
-    zvals = classifier.W.get_value()
-    zvals = zvals.reshape(28,28,10)
-
-    ########### VISUALIZE WEIGHTS 
-    
-    a1 = zvals[:,:,1].reshape(28,28)
-    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
-    fig.canvas.draw()
-    
-    fig = pyplot.figure(2)
-    a1 = zvals[:,:,2].reshape(28,28)
-    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
-    fig.canvas.draw()
-
-    fig = pyplot.figure(3)
-    a1 = zvals[:,:,3].reshape(28,28)
-    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
-    fig.canvas.draw()
-
-    fig = pyplot.figure(4)
-    a1 = zvals[:,:,4].reshape(28,28)
-    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
-    fig.canvas.draw()
-
-    fig = pyplot.figure(5)
-    a1 = zvals[:,:,5].reshape(28,28)
-    pyplot.imshow(a1, interpolation='nearest', cmap = cmap, origin='lower')
-    fig.canvas.draw()     
-
-    pyplot.show()
-    ########### VISUALIZE WEIGHTS
+    classifier.visualizeWeights()
     # ==========================================  ERROR VISUALIZATION
 
     
