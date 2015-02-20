@@ -168,7 +168,7 @@ class MLP(object):
 ##################################################################
 
 # actual parameter optimization
-def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1,
+def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=100,  # default n_epochs=1000
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=484):   # 484 instead of 500 so that at logistic layer 484 is viewable as 22*22 image
     """
     Stochastic gradient descent optimization for a multilayer perceptron on MNIST dataset
