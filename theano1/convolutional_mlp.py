@@ -77,13 +77,13 @@ class LeNetConvPoolLayer(object):
         self.W = theano.shared(
             numpy.asarray(
                 rng.uniform(low=-W_bound, high=W_bound, size=filter_shape),
-                dtype=theano.config.floatX
+                dtype=theano.config.floatX  # @UndefinedVariable
             ),
             borrow=True
         )
 
         # the bias is a 1D tensor -- one bias per output feature map
-        b_values = numpy.zeros((filter_shape[0],), dtype=theano.config.floatX)
+        b_values = numpy.zeros((filter_shape[0],), dtype=theano.config.floatX)  # @UndefinedVariable
         self.b = theano.shared(value=b_values, borrow=True)
 
         # convolve input feature maps with filters
