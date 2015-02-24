@@ -65,6 +65,12 @@ W = theano.shared( numpy.asarray(
 #     c = conv2d(m,np.array([w, w, w]))
 #     f = theano.function([m], c)
 #     print f(numpy.ones([100,100], dtype=numpy.float32)).shape  # outputs (3, 91, 100)
+#
+# ALSO, look here http://stackoverflow.com/a/25161521
+# Two similar implementation exists for conv2d:
+# signal.conv2d and nnet.conv2d.
+# The former implements a traditional 2D convolution, while the latter implements the convolutional layers present in convolutional neural networks 
+# (where filters are 3D and pool over several input channels).
 
 conv_out = conv.conv2d(inputMB, W)   # http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv.conv2d
 
