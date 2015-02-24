@@ -58,6 +58,14 @@ W = theano.shared( numpy.asarray(
 # Putting everything together, the batched convolution operation convolves a 4D input tensor with a 4D kernel tensor to produce a 4D output tensor. 
 # Obviously, this gives ample of opportunities for parallelization. Add to this the different possible ways of computing a 2D convolution, and you can see
 # why there are so many competing implementations.
+#
+# BUT, if you want the results of every single filter http://stackoverflow.com/questions/23978598/why-does-theano-conv2d-add-empty-dimension
+# The docstring of conv2d says signal.conv.conv2d performs a basic 2D convolution of the input with the given filters. (note the plural)
+# You could pass it several filters and it will return the convolutions with all of those. Try e.g.
+#     c = conv2d(m,np.array([w, w, w]))
+#     f = theano.function([m], c)
+#     print f(numpy.ones([100,100], dtype=numpy.float32)).shape  # outputs (3, 91, 100)
+
 conv_out = conv.conv2d(inputMB, W)   # http://deeplearning.net/software/theano/library/tensor/nnet/conv.html#theano.tensor.nnet.conv.conv2d
 
 
