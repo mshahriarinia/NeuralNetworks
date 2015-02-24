@@ -7,7 +7,7 @@ import numpy
 
 # There is an image in 'RGB' and we want to apply 'two' randomly initialized 9x9 filters as convolution on it and see the result.
 
-rng = numpy.random.RandomState(23455)
+rng = numpy.random.RandomState(23455) # based on differnet random numbers you'll see that left/right filtered images appear differently
 
 
 ####################           Symbolic Model Construction
