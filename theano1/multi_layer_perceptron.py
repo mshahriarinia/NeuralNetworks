@@ -297,8 +297,7 @@ def mlp_sgd_optimization_mnist(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n
                 
                 # VALIDATE
                 # compute zero-one loss on validation set
-                validation_losses = [validate_model_error(i) for i
-                                     in xrange(n_valid_batches)]
+                validation_losses = [validate_model_error(i) for i in xrange(n_valid_batches)]
                 this_validation_loss = numpy.mean(validation_losses)
 
                 print('epoch %i, minibatch %i/%i, validation error %f %%' % (epoch, minibatch_index + 1, n_train_batches, this_validation_loss * 100.))
