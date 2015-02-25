@@ -56,13 +56,10 @@ class HiddenLayer(object):
         self.input_data = input_data
 
         # `W` is uniformely sampled, The output is converted to theano.config.floatX so that code is runable on GPU
+        W_bound = numpy.sqrt(6. / (n_in + n_out))
         if W is None:
             W_values = numpy.asarray(
-                rng.uniform(
-                    low  = -numpy.sqrt(6. / (n_in + n_out)),
-                    high =  numpy.sqrt(6. / (n_in + n_out)),
-                    size = (n_in, n_out)
-                ),
+                rng.uniform(low  = -W_bound, high =  W_bound, size = (n_in, n_out)),
                 dtype=theano.config.floatX  # @UndefinedVariable
             )
             
