@@ -1,30 +1,30 @@
 """
- This tutorial introduces denoising auto-encoders (dA) using Theano.
+ This tutorial introduces denoising auto-encoders (DAE) using Theano.
 
- Denoising autoencoders are the building blocks for SdA. They are based on auto-encoders as the ones 
- used in Bengio et al. 2007. An autoencoder takes an input x and first maps it to a hidden representation 
- y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
- The resulting latent representation y is then mapped back to a "reconstructed" vector z \in [0,1]^d in input
- space z = g_{\theta'}(y) = s(W'y + b').  The weight matrix W' can optionally be constrained such that W' = W^T, 
- in which case the autoencoder is said to have tied weights. The network is trained such that to minimize the reconstruction error 
- (the error between x and z).
+ Denoising autoencoders are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
+ 
+ An autoencoder takes an input x and first maps it to a hidden representation 
+        y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
+ The resulting latent representation y is then mapped back to a "reconstructed" vector z \in [0,1]^d in input space 
+        z = g_{\theta'}(y) = s(W'y + b').  
+ The weight matrix W' can optionally be constrained such that 
+        W' = W^T, 
+ in which case the autoencoder is said to have tied weights. 
+ The network is trained such that to minimize the reconstruction error (the error between x and z).
 
- For the denosing autoencoder, during training, first x is corrupted into
- \tilde{x}, where \tilde{x} is a partially destroyed version of x by means
- of a stochastic mapping. Afterwards y is computed as before (using
- \tilde{x}), y = s(W\tilde{x} + b) and z as s(W'y + b'). The reconstruction
- error is now measured between z and the uncorrupted input x, which is
- computed as the cross-entropy :
+ Denosing autoencoder, during training, first x is corrupted into \tilde{x}, where \tilde{x} is a partially destroyed version of x by means
+ of a stochastic mapping. Afterwards y is computed as before (using \tilde{x}), 
+         y = s(W\tilde{x} + b) and z as s(W'y + b'). 
+ The reconstruction error is now measured between z and the uncorrupted input x, 
+ which is computed as the cross-entropy :
       - \sum_{k=1}^d[ x_k \log z_k + (1-x_k) \log( 1-z_k)]
 
 
  References :
-   - P. Vincent, H. Larochelle, Y. Bengio, P.A. Manzagol: Extracting and
-   Composing Robust Features with Denoising Autoencoders, ICML'08, 1096-1103,
-   2008
-   - Y. Bengio, P. Lamblin, D. Popovici, H. Larochelle: Greedy Layer-Wise
-   Training of Deep Networks, Advances in Neural Information Processing
-   Systems 19, 2007
+   - P. Vincent, H. Larochelle, Y. Bengio, P.A. Manzagol: 
+     Extracting and Composing Robust Features with Denoising Autoencoders,    ICML'08, 1096-1103, 2008
+   - Y. Bengio, P. Lamblin, D. Popovici, H. Larochelle: 
+     Greedy Layer-Wise Training of Deep Networks,    Advances in Neural Information Processing Systems 19, 2007
 
 """
 
@@ -48,8 +48,8 @@ except ImportError:
 
 
 # start-snippet-1
-class dA(object):
-    """Denoising Auto-Encoder class (dA)
+class DAE(object):
+    """Denoising Auto-Encoder class (DAE)
 
     A denoising autoencoders tries to reconstruct the input from a corrupted
     version of it by projecting it first in a latent space and reprojecting
@@ -84,15 +84,15 @@ class dA(object):
         bvis=None
     ):
         """
-        Initialize the dA class by specifying the number of visible units (the
+        Initialize the DAE class by specifying the number of visible units (the
         dimension d of the input ), the number of hidden units ( the dimension
         d' of the latent or hidden space ) and the corruption level. The
         constructor also receives symbolic variables for the input, weights and
         bias. Such a symbolic variables are useful when, for example the input
         is the result of some computations, or when weights are shared between
-        the dA and an MLP layer. When dealing with SdAs this always happens,
-        the dA on layer 2 gets as input the output of the dA on layer 1,
-        and the weights of the dA are used in the second stage of training
+        the DAE and an MLP layer. When dealing with SDAEs this always happens,
+        the DAE on layer 2 gets as input the output of the DAE on layer 1,
+        and the weights of the DAE are used in the second stage of training
         to construct an MLP.
 
         :type numpy_rng: numpy.random.RandomState
@@ -104,7 +104,7 @@ class dA(object):
 
         :type input: theano.tensor.TensorType
         :param input: a symbolic description of the input or None for
-                      standalone dA
+                      standalone DAE
 
         :type n_visible: int
         :param n_visible: number of visible units
@@ -114,18 +114,18 @@ class dA(object):
 
         :type W: theano.tensor.TensorType
         :param W: Theano variable pointing to a set of weights that should be
-                  shared belong the dA and another architecture; if dA should
+                  shared belong the DAE and another architecture; if DAE should
                   be standalone set this to None
 
         :type bhid: theano.tensor.TensorType
         :param bhid: Theano variable pointing to a set of biases values (for
-                     hidden units) that should be shared belong dA and another
-                     architecture; if dA should be standalone set this to None
+                     hidden units) that should be shared belong DAE and another
+                     architecture; if DAE should be standalone set this to None
 
         :type bvis: theano.tensor.TensorType
         :param bvis: Theano variable pointing to a set of biases values (for
-                     visible units) that should be shared belong dA and another
-                     architecture; if dA should be standalone set this to None
+                     visible units) that should be shared belong DAE and another
+                     architecture; if DAE should be standalone set this to None
 
 
         """
@@ -230,7 +230,7 @@ class dA(object):
 
     def get_cost_updates(self, corruption_level, learning_rate):
         """ This function computes the cost and the updates for one trainng
-        step of the dA """
+        step of the DAE """
 
         tilde_x = self.get_corrupted_input(self.x, corruption_level)
         y = self.get_hidden_values(tilde_x)
@@ -246,7 +246,7 @@ class dA(object):
         #        the minibatch
         cost = T.mean(L)
 
-        # compute the gradients of the cost of the `dA` with respect
+        # compute the gradients of the cost of the `DAE` with respect
         # to its parameters
         gparams = T.grad(cost, self.params)
         # generate the list of updates
@@ -258,9 +258,9 @@ class dA(object):
         return (cost, updates)
 
 
-def test_dA(learning_rate=0.1, training_epochs=15,
+def test_DAE(learning_rate=0.1, training_epochs=15,
             dataset='../mnist.pkl.gz',
-            batch_size=20, output_folder='dA_plots'):
+            batch_size=20, output_folder='DAE_plots'):
 
     """
     This demo is tested on MNIST
@@ -296,7 +296,7 @@ def test_dA(learning_rate=0.1, training_epochs=15,
     rng = numpy.random.RandomState(123)
     theano_rng = RandomStreams(rng.randint(2 ** 30))
 
-    da = dA(
+    da = DAE(
         numpy_rng=rng,
         theano_rng=theano_rng,
         input=x,
@@ -353,7 +353,7 @@ def test_dA(learning_rate=0.1, training_epochs=15,
     rng = numpy.random.RandomState(123)
     theano_rng = RandomStreams(rng.randint(2 ** 30))
 
-    da = dA(
+    da = DAE(
         numpy_rng=rng,
         theano_rng=theano_rng,
         input=x,
@@ -408,4 +408,4 @@ def test_dA(learning_rate=0.1, training_epochs=15,
 
 
 if __name__ == '__main__':
-    test_dA()
+    test_DAE()
