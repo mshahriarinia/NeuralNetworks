@@ -28,6 +28,9 @@ import theano.tensor as T
 from theano.tensor.signal import downsample
 from theano.tensor.nnet import conv
 
+import logging
+logging.getLogger("theano.gof.cmodule").setLevel(logging.DEBUG)
+
 #####################      LOAD LOGISTIC REGRESSION LAYER FROM logistic_sgd.py
 ######################################################################
 ######################################################################
@@ -216,7 +219,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
         for param_i, grad_i in zip(params, grads)
     ]
 
-    train_model = theano.function(
+    train_model = theano.function(   # THIS IS WHERE SEGMENTATION FAULT 11 HAPPENS
         [index],
         cost,
         updates=updates,

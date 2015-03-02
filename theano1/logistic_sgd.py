@@ -41,7 +41,7 @@ import numpy
 import theano
 import theano.tensor as T
 
-
+import matplotlib
 
 
 import matplotlib as mpl
