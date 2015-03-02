@@ -1,7 +1,7 @@
 """
  This tutorial introduces denoising auto-encoders (DAE) using Theano.
 
- Denoising autoencoders are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
+ Denoising Auto-Encoders are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
  
  An autoencoder takes an input x and first maps it to a hidden representation 
         y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
