@@ -1,22 +1,18 @@
 """
- This tutorial introduces denoising auto-encoders (DAE) using Theano.
-
- Denoising Auto-Encoders are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
+ Denoising Auto-Encoders (DAE) are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
  
  An autoencoder takes an input x and first maps it to a hidden representation 
         y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
  The resulting latent representation y is then mapped back to a "reconstructed" vector z \in [0,1]^d in input space 
         z = g_{\theta'}(y) = s(W'y + b').  
  The weight matrix W' can optionally be constrained such that 
-        W' = W^T, 
- in which case the autoencoder is said to have tied weights. 
+        W' = W^T,     the autoencoder is said to have tied weights. 
  The network is trained such that to minimize the reconstruction error (the error between x and z).
 
  Denosing autoencoder, during training, first x is corrupted into \tilde{x}, where \tilde{x} is a partially destroyed version of x by means
  of a stochastic mapping. Afterwards y is computed as before (using \tilde{x}), 
          y = s(W\tilde{x} + b) and z as s(W'y + b'). 
- The reconstruction error is now measured between z and the uncorrupted input x, 
- which is computed as the cross-entropy :
+ The reconstruction error is now measured between z and the uncorrupted input x, which is computed as the cross-entropy:
       - \sum_{k=1}^d[ x_k \log z_k + (1-x_k) \log( 1-z_k)]
 
 
@@ -50,18 +46,6 @@ except ImportError:
 class DAE(object):
     """Denoising Auto-Encoder (DAE) tries to reconstruct the input from a corrupted version of it by projecting it first in a latent space and 
     reprojecting it afterwards back in the input space. (Refer to Vincent et al. 2008)
-   
-    If x is the input then equation (1) computes a partially destroyed version of x by means of a stochastic mapping q_D. 
-            \tilde{x} ~ q_D(\tilde{x}|x)                                     (1)
-    
-    Equation (2) computes the projection of the input into the latent space. 
-            y = s(W \tilde{x} + b)                                           (2)
-    
-    Equation (3) computes the reconstruction of the input,
-            x = s(W' y  + b')                                                (3)
-    
-    Equation (4) computes the reconstruction error.
-            L(x,z) = -sum_{k=1}^d [x_k \log z_k + (1-x_k) \log( 1-z_k)]      (4)
     """
 
     def __init__(self, numpy_rng, theano_rng=None,
@@ -89,36 +73,19 @@ class DAE(object):
 
         # Note: W' was written as `W_prime` and b' as `b_prime`
         if not W:
-            # W uniformely sampled from -4*sqrt(6./(n_visible+n_hidden)) and 4*sqrt(6./(n_hidden+n_visible)) 
-            # the output of uniform converted using asarray to dtype, theano.config.floatX, so that the code is runable on GPU
-            initial_W = numpy.asarray(
-                numpy_rng.uniform(
-                    low=-4 * numpy.sqrt(6. / (n_hidden + n_visible)),
-                    high=4 * numpy.sqrt(6. / (n_hidden + n_visible)),
-                    size=(n_visible, n_hidden)
-                ),
-                dtype=theano.config.floatX
-            )
+            # W uniformely sampled, output converted using asarray to theano.config.floatX, so that the code is runnable on GPU
+            W_bound = 4 * numpy.sqrt(6. / (n_hidden + n_visible))
+            initial_W = numpy.asarray(numpy_rng.uniform(low  =-W_bound, 
+                                                        high = W_bound, 
+                                                        size=(n_visible, n_hidden)), 
+                                      dtype=theano.config.floatX)
             W = theano.shared(value=initial_W, name='W', borrow=True)
 
         if not bvis:
-            bvis = theano.shared(
-                value=numpy.zeros(
-                    n_visible,
-                    dtype=theano.config.floatX
-                ),
-                borrow=True
-            )
+            bvis = theano.shared(value=numpy.zeros(n_visible, dtype=theano.config.floatX), borrow=True)
 
         if not bhid:
-            bhid = theano.shared(
-                value=numpy.zeros(
-                    n_hidden,
-                    dtype=theano.config.floatX
-                ),
-                name='b',
-                borrow=True
-            )
+            bhid = theano.shared(value=numpy.zeros(n_hidden, dtype=theano.config.floatX), name='b', borrow=True)
 
         self.W = W
         self.b = bhid         # b corresponds to the bias of the hidden
@@ -149,12 +116,9 @@ class DAE(object):
         """This function keeps ``1-corruption_level``: entries of the inputs the same and zero-out randomly selected subset of size ``coruption_level``
         """
 
-        # theano.rng.binomial: this will produce an array of 0s and 1s where 1 has a  probability of
-        # 1 - ``corruption_level`` and 0 with  ``corruption_level``
-        # Note:
-        # The binomial function return int64 data type by default.  int64 multiplicated by the input type(floatX) always return float64.  
-        # To keep all data in floatX when floatX is float32, we set the dtype of the binomial to floatX. 
-        # As in our case the value of the binomial is always 0 or 1, this don't change the result. 
+        # theano.rng.binomial: this will produce an array of 0s and 1s where 1 has a  probability of 1 - ``corruption_level`` and 0 with  ``corruption_level``
+        # Note: The binomial function return int64 data type by default.  int64 multiplicated by the input type(floatX) always return float64.  
+        # To keep all data in floatX when floatX is float32, we set the dtype of the binomial to floatX. Here the value of the binomial is always 0 or 1, this don't change the result. 
         # This is needed to allow the gpu to work correctly as it only support float32 for now.
         corrupted_index = self.theano_rng.binomial(size=input.shape,       # shape(size) of random numbers that it should produce
                                                        n=1,                    # number of trials
@@ -179,18 +143,12 @@ class DAE(object):
         # note : we sum over the size of a datapoint; if we are using minibatches, L will be a vector, with one entry per example in minibatch
         L = - T.sum(self.x * T.log(z) + (1 - self.x) * T.log(1 - z), axis=1)
         
-        # note : L is now a vector, where each element is the cross-entropy cost of the reconstruction of the corresponding example of the minibatch.
+        # note : L is a vector, each element is the cross-entropy cost of the reconstruction of the corresponding example of the minibatch.
         #        We need to compute the average of all these to get the cost of the minibatch
         cost = T.mean(L)
 
-        # compute the gradients of the cost of the `DAE` with respect
-        # to its parameters
-        gparams = T.grad(cost, self.params)
-        # generate the list of updates
-        updates = [
-            (param, param - learning_rate * gparam)
-            for param, gparam in zip(self.params, gparams)
-        ]
+        g_params = T.grad(cost, self.params)      # compute the gradients of the cost of the `DAE` with respect to its parameters
+        updates = [(param, param - learning_rate * gparam)  for param, gparam in zip(self.params, g_params)]   # generate the list of updates
 
         return (cost, updates)
     
@@ -216,33 +174,32 @@ def test_DAE(learning_rate=0.1, training_epochs=15,
             dataset='../mnist.pkl.gz',
             batch_size=20, output_folder='DAE_plots'):
 
-    """
-    This demo is tested on MNIST
-
-    :type learning_rate: float
-    :param learning_rate: learning rate used for training the DeNosing
-                          AutoEncoder
-
-    :type training_epochs: int
-    :param training_epochs: number of epochs used for training
-
-    :type dataset: string
-    :param dataset: path to the picked dataset
-
-    """
+    print '... loading data'    
     datasets = load_data(dataset)
+    
     train_set_x, train_set_y = datasets[0]
 
-    # compute number of minibatches for training, validation and testing
+    # set number of minibatches
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
-
-    # allocate symbolic variables for the data
-    index = T.lscalar()    # index to a [mini]batch
-    x = T.matrix('x')  # the data is presented as rasterized images
-
+    
+    # Create output directory to store weight images
     if not os.path.isdir(output_folder):
         os.makedirs(output_folder)
     os.chdir(output_folder)
+    
+    print '... building symbolic model'
+
+    ############################ CREATE SYMBOLIC VARIABLES
+    ##################################################################
+    ##################################################################
+
+    # create symbolic variable for the indexing minibatches
+    index = T.lscalar()    # index to a [mini]batch
+
+    # create symbolic variables for input (x represent a minibatch)
+    x = T.matrix('x')  # data images
+
+
     ####################################
     # BUILDING THE MODEL NO CORRUPTION #
     ####################################
@@ -250,18 +207,8 @@ def test_DAE(learning_rate=0.1, training_epochs=15,
     rng = numpy.random.RandomState(123)
     theano_rng = RandomStreams(rng.randint(2 ** 30))
 
-    da = DAE(
-        numpy_rng=rng,
-        theano_rng=theano_rng,
-        input=x,
-        n_visible=28 * 28,
-        n_hidden=500
-    )
-
-    cost, updates = da.get_cost_updates(
-        corruption_level=0.,
-        learning_rate=learning_rate
-    )
+    da = DAE(numpy_rng=rng, theano_rng=theano_rng, input=x, n_visible=28 * 28, n_hidden=500)
+    cost, updates = da.get_cost_updates(corruption_level=0., learning_rate=learning_rate)
 
     train_da = theano.function(
         [index],
@@ -272,32 +219,23 @@ def test_DAE(learning_rate=0.1, training_epochs=15,
         }
     )
 
+    #####################      TRAIN MODEL
+
     start_time = time.clock()
 
-    ############
-    # TRAINING #
-    ############
-
-    # go through training epochs
-    for epoch in xrange(training_epochs):
-        # go through trainng set
+    for epoch in xrange(training_epochs):       # go through training epochs
         c = []
-        for batch_index in xrange(n_train_batches):
+        for batch_index in xrange(n_train_batches):     # go through trainng set
             c.append(train_da(batch_index))
 
         print 'Training epoch %d, cost ' % epoch, numpy.mean(c)
 
     end_time = time.clock()
-
     training_time = (end_time - start_time)
 
-    print >> sys.stderr, ('The no corruption code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.2fm' % ((training_time) / 60.))
-    image = Image.fromarray(
-        tile_raster_images(X=da.W.get_value(borrow=True).T,
-                           img_shape=(28, 28), tile_shape=(10, 10),
-                           tile_spacing=(1, 1)))
+    print >> sys.stderr, ('The no corruption code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % ((training_time) / 60.))
+    
+    image = Image.fromarray(tile_raster_images(X=da.W.get_value(borrow=True).T, img_shape=(28, 28), tile_shape=(10, 10), tile_spacing=(1, 1)))
     image.save('filters_corruption_0.png')
 
     #####################################
@@ -307,18 +245,8 @@ def test_DAE(learning_rate=0.1, training_epochs=15,
     rng = numpy.random.RandomState(123)
     theano_rng = RandomStreams(rng.randint(2 ** 30))
 
-    da = DAE(
-        numpy_rng=rng,
-        theano_rng=theano_rng,
-        input=x,
-        n_visible=28 * 28,
-        n_hidden=500
-    )
-
-    cost, updates = da.get_cost_updates(
-        corruption_level=0.3,
-        learning_rate=learning_rate
-    )
+    da = DAE(numpy_rng=rng, theano_rng=theano_rng, input=x, n_visible=28 * 28, n_hidden=500)
+    cost, updates = da.get_cost_updates(corruption_level=0.3, learning_rate=learning_rate)
 
     train_da = theano.function(
         [index],
@@ -331,31 +259,21 @@ def test_DAE(learning_rate=0.1, training_epochs=15,
 
     start_time = time.clock()
 
-    ############
-    # TRAINING #
-    ############
-
-    # go through training epochs
-    for epoch in xrange(training_epochs):
-        # go through trainng set
+    #####################      TRAIN MODEL
+    
+    for epoch in xrange(training_epochs):   # go through training epochs
         c = []
-        for batch_index in xrange(n_train_batches):
+        for batch_index in xrange(n_train_batches):    # go through trainng set
             c.append(train_da(batch_index))
 
         print 'Training epoch %d, cost ' % epoch, numpy.mean(c)
 
     end_time = time.clock()
-
     training_time = (end_time - start_time)
 
-    print >> sys.stderr, ('The 30% corruption code for file ' +
-                          os.path.split(__file__)[1] +
-                          ' ran for %.2fm' % (training_time / 60.))
+    print >> sys.stderr, ('The 30% corruption code for file ' + os.path.split(__file__)[1] + ' ran for %.2fm' % (training_time / 60.))
 
-    image = Image.fromarray(tile_raster_images(
-        X=da.W.get_value(borrow=True).T,
-        img_shape=(28, 28), tile_shape=(10, 10),
-        tile_spacing=(1, 1)))
+    image = Image.fromarray(tile_raster_images(X=da.W.get_value(borrow=True).T, img_shape=(28, 28), tile_shape=(10, 10), tile_spacing=(1, 1)))
     image.save('filters_corruption_30.png')
 
     os.chdir('../')
