@@ -1,27 +1,24 @@
 """
- Denoising Auto-Encoders (DAE) are the building blocks for SDAE. They are based on auto-encoders as the ones used in Bengio et al. 2007. 
+ Denoising Auto-Encoders (DAE) are the building blocks for SDAE. They are based on Bengio et al. 2007. 
  
- An autoencoder takes an input x and first maps it to a hidden representation 
-        y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
- The resulting latent representation y is then mapped back to a "reconstructed" vector z \in [0,1]^d in input space 
-        z = g_{\theta'}(y) = s(W'y + b').  
- The weight matrix W' can optionally be constrained such that 
-        W' = W^T,     the autoencoder is said to have tied weights. 
- The network is trained such that to minimize the reconstruction error (the error between x and z).
+ Autoencoder (AE): takes an input x and first maps it to a hidden representation 
+            y = f_{\theta}(x) = s(Wx+b), parameterized by \theta={W,b}. 
+     The resulting latent representation y is then mapped back to a "reconstructed" vector z \in [0,1]^d in input space 
+            z = g_{\theta'}(y) = s(W'y + b').  
+     The weight matrix W' can optionally be constrained such that 
+            W' = W^T,     the autoencoder is said to have tied weights. 
+     The network is trained such that to minimize the reconstruction error (the error between x and z).
 
- Denosing autoencoder, during training, first x is corrupted into \tilde{x}, where \tilde{x} is a partially destroyed version of x by means
- of a stochastic mapping. Afterwards y is computed as before (using \tilde{x}), 
-         y = s(W\tilde{x} + b) and z as s(W'y + b'). 
- The reconstruction error is now measured between z and the uncorrupted input x, which is computed as the cross-entropy:
-      - \sum_{k=1}^d[ x_k \log z_k + (1-x_k) \log( 1-z_k)]
-
+ DAE: x is corrupted to \tilde{x}. Afterwards y is computed as before 
+             y = s(W\tilde{x} + b) and z as s(W'y + b'). 
+     The reconstruction error is now measured between z and the uncorrupted input x, which is computed as the cross-entropy:
+          - \sum_{k=1}^d[ x_k \log z_k + (1-x_k) \log( 1-z_k)]
 
  References :
    - P. Vincent, H. Larochelle, Y. Bengio, P.A. Manzagol: 
      Extracting and Composing Robust Features with Denoising Autoencoders,    ICML'08, 1096-1103, 2008
    - Y. Bengio, P. Lamblin, D. Popovici, H. Larochelle: 
      Greedy Layer-Wise Training of Deep Networks,    Advances in Neural Information Processing Systems 19, 2007
-
 """
 
 import os
@@ -113,7 +110,7 @@ class DAE(object):
 
 
     def get_corrupted_input(self, input, corruption_level):
-        """This function keeps ``1-corruption_level``: entries of the inputs the same and zero-out randomly selected subset of size ``coruption_level``
+        """zero-out randomly selected subset of size coruption_level
         """
 
         # theano.rng.binomial: this will produce an array of 0s and 1s where 1 has a  probability of 1 - ``corruption_level`` and 0 with  ``corruption_level``
