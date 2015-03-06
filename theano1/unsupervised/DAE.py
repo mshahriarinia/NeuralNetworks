@@ -106,21 +106,15 @@ class DAE(object):
 ##################################################################
 ##################################################################
 
-
-
+    # theano.rng.binomial: this will produce an array of 0s and 1s where 1 has a  probability of 1 - ``corruption_level`` and 0 with  ``corruption_level``
+    # Note: The binomial function return int64 data type by default.  int64 multiplicated by the input type(floatX) always return float64.  
+    # To keep all data in floatX when floatX is float32, we set the dtype of the binomial to floatX. Here the value of the binomial is always 0 or 1, this don't change the result. 
+    # This is needed to allow the gpu to work correctly as it only support float32 for now.
+    # shape(size) of random numbers that it should produce  # number of trials  # probability of success of each trial
 
     def get_corrupted_input(self, input, corruption_level):
-        """zero-out randomly selected subset of size coruption_level
-        """
-
-        # theano.rng.binomial: this will produce an array of 0s and 1s where 1 has a  probability of 1 - ``corruption_level`` and 0 with  ``corruption_level``
-        # Note: The binomial function return int64 data type by default.  int64 multiplicated by the input type(floatX) always return float64.  
-        # To keep all data in floatX when floatX is float32, we set the dtype of the binomial to floatX. Here the value of the binomial is always 0 or 1, this don't change the result. 
-        # This is needed to allow the gpu to work correctly as it only support float32 for now.
-        corrupted_index = self.theano_rng.binomial(size=input.shape,       # shape(size) of random numbers that it should produce
-                                                       n=1,                    # number of trials
-                                                       p=1 - corruption_level, # probability of success of each trial
-                                                       dtype=theano.config.floatX)
+        """zero-out randomly selected subset of size coruption_level"""
+        corrupted_index = self.theano_rng.binomial(size=input.shape, n=1, p=1-corruption_level, dtype=theano.config.floatX)
         return corrupted_index * input
 
     def get_hidden_values(self, input):

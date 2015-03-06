@@ -37,15 +37,12 @@ from DAE import DAE
 class SDAE(object):
     """ A stacked denoising autoencoder model is obtained by stacking several DAEs. The hidden layer of the DAE at layer `i` becomes the input of
     the DAE at layer `i+1`. The first layer DAE gets as input the input of the SDAE, and the hidden layer of the last DAE represents the output.
-    Note that after pretraining, the SDAE is dealt with as a normal MLP, the DAEs are only used to initialize the weights.
-    
-    This class is made to support a variable number of layers.
+    Note that after pretraining, the SDAE is dealt with as a normal MLP, the DAEs are only used to initialize the weights. This class is made to support a variable number of layers.
     """
 
     def __init__(self, numpy_rng, theano_rng=None,
         n_ins=784, hidden_layers_sizes=[500, 500], n_outs=10,
-        corruption_levels=[0.1, 0.1]
-    ):
+        corruption_levels=[0.1, 0.1]):
         """  
         numpy_rng: numpy.random.RandomState: numpy random number generator used to draw initial weights
         theano_rng: theano.tensor.shared_randomstreams.RandomStreams: Theano random generator; if None is given one is generated based on a seed drawn from `rng`
@@ -68,111 +65,69 @@ class SDAE(object):
         self.x = T.matrix('x')  # the data is presented as rasterized images
         self.y = T.ivector('y')  # the labels are presented as 1D vector of [int] labels
 
-        # The SDAE is an MLP, for which all weights of intermediate layers
-        # are shared with a different denoising autoencoders
-        # We will first construct the SDAE as a deep multilayer perceptron,
-        # and when constructing each sigmoidal layer we also construct a
-        # denoising autoencoder that shares weights with that layer
-        # During pretraining we will train these autoencoders (which will
-        # lead to chainging the weights of the MLP as well)
-        # During finetunining we will finish training the SDAE by doing
-        # stochastich gradient descent on the MLP
+        # The SDAE is an MLP, for which all weights of intermediate layers are shared with a different denoising autoencoders. We will first construct the 
+        # SDAE as a deep multilayer perceptron, and when constructing each sigmoidal layer we also construct a denoising autoencoder that shares weights with that layer
+        #     During pretraining we will train these autoencoders (which will lead to changing the weights of the MLP as well)
+        #     During finetunining we will finish training the SDAE by doing stochastic gradient descent on the MLP
 
-        # start-snippet-2
+        # construct each layer as one sigmoidal and one DAE layer in parallel to each other
         for i in xrange(self.n_layers):
-            # construct the sigmoidal layer
-
-            # the size of the input is either the number of hidden units of
-            # the layer below or the input size if we are on the first layer
             if i == 0:
                 input_size = n_ins
             else:
                 input_size = hidden_layers_sizes[i - 1]
 
-            # the input to this layer is either the activation of the hidden
-            # layer below or the input of the SDAE if you are on the first
-            # layer
             if i == 0:
                 layer_input = self.x
             else:
-                layer_input = self.sigmoid_layers[-1].output
+                layer_input = self.sigmoid_layers[-1].output_data
 
-            sigmoid_layer = HiddenLayer(rng=numpy_rng,
-                                        input=layer_input,
-                                        n_in=input_size,
-                                        n_out=hidden_layers_sizes[i],
+            # hidden layer (logistic)
+            sigmoid_layer = HiddenLayer(rng=numpy_rng, 
+                                        input_data=layer_input, n_in=input_size, n_out=hidden_layers_sizes[i],
                                         activation=T.nnet.sigmoid)
-            # add the layer to our list of layers
-            self.sigmoid_layers.append(sigmoid_layer)
-            # its arguably a philosophical question...
-            # but we are going to only declare that the parameters of the
-            # sigmoid_layers are parameters of the StackedDAA
-            # the visible biases in the DAE are parameters of those
-            # DAE, but not the SDAE
+            self.sigmoid_layers.append(sigmoid_layer)    # add the layer to our list of layers
             self.params.extend(sigmoid_layer.params)
+            # We are going to only declare that the parameters of the sigmoid_layers are parameters of the StackedDAA
+            # the visible biases in the DAE are parameters of those DAE, but not the SDAE
 
-            # Construct a denoising autoencoder that shared weights with this
-            # layer
-            DAE_layer = DAE(numpy_rng=numpy_rng,
-                          theano_rng=theano_rng,
-                          input=layer_input,
-                          n_visible=input_size,
-                          n_hidden=hidden_layers_sizes[i],
-                          W=sigmoid_layer.W,
-                          bhid=sigmoid_layer.b)
+            # DAE layer that shared weights with this layer
+            DAE_layer = DAE(numpy_rng=numpy_rng, theano_rng=theano_rng,
+                          input=layer_input, n_visible=input_size, n_hidden=hidden_layers_sizes[i],
+                          W=sigmoid_layer.W, bhid=sigmoid_layer.b)  # shared weights and biases
             self.DAE_layers.append(DAE_layer)
-        # end-snippet-2
-        # We now need to add a logistic layer on top of the MLP
-        self.logLayer = LogisticRegression(
-            input=self.sigmoid_layers[-1].output,
-            n_in=hidden_layers_sizes[-1],
-            n_out=n_outs
-        )
 
-        self.params.extend(self.logLayer.params)
-        # construct a function that implements one step of finetunining
+        # Add a logistic layer at the end of the MLP
+        self.logisticLayer = LogisticRegression(input_data=self.sigmoid_layers[-1].output_data, n_in=hidden_layers_sizes[-1], n_out=n_outs)
+        self.params.extend(self.logisticLayer.params)
 
-        # compute the cost for second phase of training,
-        # defined as the negative log likelihood
-        self.finetune_cost = self.logLayer.negative_log_likelihood(self.y)
-        # compute the gradients with respect to the model parameters
-        # symbolic variable that points to the number of errors made on the
-        # minibatch given by self.x and self.y
-        self.errors = self.logLayer.errors(self.y)
+        self.finetune_cost = self.logisticLayer.negative_log_likelihood(self.y)
+        self.errors = self.logisticLayer.errors(self.y)
 
+    ####################################     PRETRAINING
+    ##################################################################
+    ##################################################################
     def pretraining_functions(self, train_set_x, batch_size):
-        ''' Generates a list of functions, each of them implementing one
-        step in trainnig the DAE corresponding to the layer with same index.
-        The function will require as input the minibatch index, and to train
-        a DAE you just need to iterate, calling the corresponding function on
-        all minibatch indexes.
+        ''' Generates a list of functions, each of them implementing one step in trainnig the DAE corresponding to the layer with same index.
+        The function will require as input the minibatch index, and to train a DAE you just need to iterate, calling the corresponding function on all minibatch indexes.
 
-        :type train_set_x: theano.tensor.TensorType
-        :param train_set_x: Shared variable that contains all datapoints used
-                            for training the DAE
-
-        :type batch_size: int
-        :param batch_size: size of a [mini]batch
-
-        :type learning_rate: float
-        :param learning_rate: learning rate used during training for any of
-                              the DAE layers
+        train_set_x: theano.tensor.TensorType: Shared variable that contains all datapoints used for training the DAE
+        batch_size: int: size of a [mini]batch
+        learning_rate: float: learning rate used during training for any of the DAE layers
         '''
 
         # index to a [mini]batch
-        index = T.lscalar('index')  # index to a minibatch
-        corruption_level = T.scalar('corruption')  # % of corruption to use
-        learning_rate = T.scalar('lr')  # learning rate to use
-        # begining of a batch, given `index`
-        batch_begin = index * batch_size
-        # ending of a batch given `index`
-        batch_end = batch_begin + batch_size
+        index = T.lscalar('index')
+        corruption_level = T.scalar('corruption')
+        learning_rate = T.scalar('lr')
+        
+        batch_begin = index * batch_size # begining of a batch, given `index`
+        batch_end = batch_begin + batch_size # ending of a batch given `index`
 
         pretrain_fns = []
         for DAE in self.DAE_layers:
             # get the cost and the updates list
-            cost, updates = DAE.get_cost_updates(corruption_level,
-                                                learning_rate)
+            cost, updates = DAE.get_cost_updates(corruption_level, learning_rate)
             # compile the theano function
             fn = theano.function(
                 inputs=[
@@ -191,24 +146,18 @@ class SDAE(object):
 
         return pretrain_fns
 
+    ####################################     FINE TUNING
+    ##################################################################
+    ##################################################################
     def build_finetune_functions(self, datasets, batch_size, learning_rate):
-        '''Generates a function `train` that implements one step of
-        finetuning, a function `validate` that computes the error on
-        a batch from the validation set, and a function `test` that
-        computes the error on a batch from the testing set
+        '''Generates a function `train`    that implements one step of finetuning, 
+                     a function `validate` that computes the error on a batch from the validation set, and 
+                     a function `test`     that computes the error on a batch from the testing set
 
-        :type datasets: list of pairs of theano.tensor.TensorType
-        :param datasets: It is a list that contain all the datasets;
-                         the has to contain three pairs, `train`,
-                         `valid`, `test` in this order, where each pair
-                         is formed of two Theano variables, one for the
-                         datapoints, the other for the labels
-
-        :type batch_size: int
-        :param batch_size: size of a minibatch
-
-        :type learning_rate: float
-        :param learning_rate: learning rate used during finetune stage
+        datasets: list of pairs of theano.tensor.TensorType: A list that contain all the datasets; `train`, `valid`, `test` in this order, 
+                                                             each is formed of two Theano variables, one for data points, the other for labels
+        batch_size: int: size of a minibatch
+        learning_rate: float: learning rate used during fine tune stage
         '''
 
         (train_set_x, train_set_y) = datasets[0]
@@ -227,22 +176,15 @@ class SDAE(object):
         gparams = T.grad(self.finetune_cost, self.params)
 
         # compute list of fine-tuning updates
-        updates = [
-            (param, param - gparam * learning_rate)
-            for param, gparam in zip(self.params, gparams)
-        ]
+        updates = [(param, param - gparam * learning_rate) for param, gparam in zip(self.params, gparams)]
 
         train_fn = theano.function(
             inputs=[index],
             outputs=self.finetune_cost,
             updates=updates,
             givens={
-                self.x: train_set_x[
-                    index * batch_size: (index + 1) * batch_size
-                ],
-                self.y: train_set_y[
-                    index * batch_size: (index + 1) * batch_size
-                ]
+                self.x: train_set_x[index * batch_size: (index + 1) * batch_size],
+                self.y: train_set_y[index * batch_size: (index + 1) * batch_size]
             },
             name='train'
         )
@@ -251,12 +193,8 @@ class SDAE(object):
             [index],
             self.errors,
             givens={
-                self.x: test_set_x[
-                    index * batch_size: (index + 1) * batch_size
-                ],
-                self.y: test_set_y[
-                    index * batch_size: (index + 1) * batch_size
-                ]
+                self.x: test_set_x[index * batch_size: (index + 1) * batch_size],
+                self.y: test_set_y[index * batch_size: (index + 1) * batch_size]
             },
             name='test'
         )
@@ -265,12 +203,8 @@ class SDAE(object):
             [index],
             self.errors,
             givens={
-                self.x: valid_set_x[
-                    index * batch_size: (index + 1) * batch_size
-                ],
-                self.y: valid_set_y[
-                    index * batch_size: (index + 1) * batch_size
-                ]
+                self.x: valid_set_x[index * batch_size: (index + 1) * batch_size],
+                self.y: valid_set_y[index * batch_size: (index + 1) * batch_size]
             },
             name='valid'
         )
@@ -285,10 +219,12 @@ class SDAE(object):
 
         return train_fn, valid_score, test_score
 
-
+    ####################################     TEST SDAE
+    ##################################################################
+    ##################################################################
 def test_SDAE(finetune_lr=0.1, pretraining_epochs=15,
              pretrain_lr=0.001, training_epochs=1000,
-             dataset='mnist.pkl.gz', batch_size=1):
+             dataset='../mnist.pkl.gz', batch_size=1):
     """
     Demonstrates how to train and test a stochastic denoising autoencoder.
 
