@@ -1,3 +1,7 @@
+
+# IT ONLY BUILDS HALF OF THE NETWORK, IT DOESN'T TRY TO RECONSTRUCT THE WHOLE SIGNAL, MAYBE IT HAS THE SAME MEANING: THE FIRST LAYER RECONSTRUCTS THE 
+# INPUT, THEN THE 2ND LAYER RECONSTRUCTS 1ST AND SO ON, LOOKS LIKE IT SHOULD HAVE THE SAME MEANING
+
 """
  Stacked Denoising Auto-Encoders (SDAE): DAEs are the building blocks for SDAE.
  Auto-Encoder: 
@@ -211,6 +215,8 @@ class SDAE(object):
             name='valid'
         )
 
+        # Note that the returned valid_score and test_score are not Theano functions, but rather python functions 
+        # that also loop over the entire validation set and the entire test set producing a list of the losses over these sets.
         # Create a function that scans the entire validation set
         def valid_score():
             return [valid_score_i(i) for i in xrange(n_valid_batches)]
@@ -281,7 +287,8 @@ def test_SDAE(finetune_lr=0.1, pretraining_epochs=15,
     start_time = time.clock()
     corruption_levels = [.1, .2, .3]
     
-    # Pre-train *****LAYER-WISE******    (THE FIRST HALF OF THE NETWORK - THE OTHER HALF WILL USE THE SAME WEIGHTS TRANSPOSED)
+    # Pre-train **LAYER-WISE**   (THE FIRST HALF OF THE NETWORK - THE OTHER HALF WILL USE THE SAME WEIGHTS TRANSPOSED)
+    # This is essentially half of the network (folded) it is not unfolded.
     
     for i in xrange(sdae.n_layers):     # go through layers (pre-train layer-after-layer)
         for epoch in xrange(pretraining_epochs):   # go through pre-training epochs
