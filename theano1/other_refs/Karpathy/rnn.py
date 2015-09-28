@@ -1,6 +1,13 @@
 """
 Minimal character-level Vanilla RNN model. Written by Andrej Karpathy (@karpathy)
 BSD License
+
+This is a basic one level RNN of  
+  hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh)
+  ys[t] = np.dot(Why, hs[t]) + by
+  
+It takes a window size of data feeds it into the network, updates its weights and proceeds to the next non-overlapping window. Once at the end, 
+iterates back again from the beginning.
 """
 import numpy as np
 
@@ -37,14 +44,16 @@ def lossFun(inputs, targets, hprev):
   for t in xrange(len(inputs)):
     xs[t] = np.zeros((vocab_size,1)) # encode in 1-of-k representation
     xs[t][inputs[t]] = 1
-    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # hidden state
+    hs[t] = np.tanh(np.dot(Wxh, xs[t]) + np.dot(Whh, hs[t-1]) + bh) # hidden state ---------------------------------------- THIS IS THE ACTUAL RNN STEP
     ys[t] = np.dot(Why, hs[t]) + by # unnormalized log probabilities for next chars
     ps[t] = np.exp(ys[t]) / np.sum(np.exp(ys[t])) # probabilities for next chars
     loss += -np.log(ps[t][targets[t],0]) # softmax (cross-entropy loss)
+  
   # backward pass: compute gradients going backwards
   dWxh, dWhh, dWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
   dbh, dby = np.zeros_like(bh), np.zeros_like(by)
   dhnext = np.zeros_like(hs[0])
+  
   for t in reversed(xrange(len(inputs))):
     dy = np.copy(ps[t])
     dy[targets[t]] -= 1 # backprop into y
@@ -78,25 +87,32 @@ def sample(h, seed_ix, n):
     ixes.append(ix)
   return ixes
 
-n, p = 0, 0
+n = 0 # iteration counter 
+p = 0 # p is the index in text array (in each iteration the network is fed data[p:p+seq_length] (input) and output is  data[p+1:p+seq_length+1]]
+
+# init weights/biases
 mWxh, mWhh, mWhy = np.zeros_like(Wxh), np.zeros_like(Whh), np.zeros_like(Why)
 mbh, mby = np.zeros_like(bh), np.zeros_like(by) # memory variables for Adagrad
+
 smooth_loss = -np.log(1.0/vocab_size)*seq_length # loss at iteration 0
+
 while True:
-  # prepare inputs (we're sweeping from left to right in steps seq_length long)
-  if p+seq_length+1 >= len(data) or n == 0: 
+  
+  if n==0 or p+seq_length+1 >= len(data):   # in each swipe of the data reset p index and hprev.
     hprev = np.zeros((hidden_size,1)) # reset RNN memory
     p = 0 # go from start of data
+  
+  # convert sliding window of input/outpuut characters to integers.
   inputs = [char_to_ix[ch] for ch in data[p:p+seq_length]]
   targets = [char_to_ix[ch] for ch in data[p+1:p+seq_length+1]]
 
   # sample from the model now and then
   if n % 100 == 0:
-    sample_ix = sample(hprev, inputs[0], 200)
+    sample_ix = sample(hprev, inputs[0], 200) # based on the first character of the input generate the next 200 characters via sampling from output of network
     txt = ''.join(ix_to_char[ix] for ix in sample_ix)
     print '----\n %s \n----' % (txt, )
 
-  # forward seq_length characters through the net and fetch gradient
+  # forward seq_length characters through the net and fetch gradients and loss
   loss, dWxh, dWhh, dWhy, dbh, dby, hprev = lossFun(inputs, targets, hprev)
   smooth_loss = smooth_loss * 0.999 + loss * 0.001
   if n % 100 == 0: print 'iter %d, loss: %f' % (n, smooth_loss) # print progress
@@ -108,5 +124,5 @@ while True:
     mem += dparam * dparam
     param += -learning_rate * dparam / np.sqrt(mem + 1e-8) # adagrad update
 
-  p += seq_length # move data pointer
-  n += 1 # iteration counter 
+  p += seq_length # move data pointer as much as the window size
+  n += 1 
