@@ -8,6 +8,8 @@ This is a basic one level RNN of
   
 It takes a window size of data feeds it into the network, updates its weights and proceeds to the next non-overlapping window. Once at the end, 
 iterates back again from the beginning.
+
+There are seq_length inputs, at each iteration, at first h[0]={0,...,0} next h[1]={-8, 1.6, ...} the value of each h[t] is composed of all characters in this window
 """
 import numpy as np
 
