@@ -1,0 +1,1 @@
+$ THEANO_FLAGS="floatX=float32" python lstm.py   # The script will automatically download the data and decompress it.
