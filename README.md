@@ -1,6 +1,7 @@
 NeuralNetworks
 ==============
 
+cat .~/.theanorc
 
 [global]
 
