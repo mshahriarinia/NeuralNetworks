@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
 """
+It has three models that you can pick from, but default is MLP:
+- Load the data
+- constructs the network
+- SGD loop
+
+
+
 Usage example employing Lasagne for digit recognition using the MNIST dataset.
 
 This example is deliberately structured as a long flat file, focusing on how
