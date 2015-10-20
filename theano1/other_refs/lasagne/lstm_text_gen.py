@@ -24,110 +24,99 @@ Unlike a DNN with a context window of the same size, LSTM has a feed-forward/bac
 
 
 
-Recurrent network example.  Trains a 2 layered LSTM network to learn
-text from a user-provided input file. The network can then be used to generate
-text using a short string as seed (refer to the variable generation_phrase).
-This example is partly based on Andrej Karpathy's blog
-(http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
-and a similar example in the Keras package (keras.io).
-The inputs to the network are batches of sequences of characters and the corresponding
-targets are the characters in the text shifted to the right by one. 
-Assuming a sequence length of 5, a training point for a text file
-"The quick brown fox jumps over the lazy dog" would be
-INPUT : 'T','h','e',' ','q'
-OUTPUT: 'u'
+LSTM example
+------------
+Trains a 2 layered LSTM network to learn text from a user-provided input file. The network can then be used to generate text using a short string as
+seed (refer to the variable generation_phrase). This example is partly based on Andrej Karpathy's blog (http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
+and a similar example in the Keras package (keras.io). 
 
-The loss function compares (via categorical crossentropy) the prediction
-with the output/target.
+The inputs to the network are batches of sequences of characters and the corresponding targets are the characters in the text shifted to the right by one. 
+Assuming a sequence length of 5, a training point for a text file "The quick brown fox jumps over the lazy dog" would be
+    INPUT : 'T','h','e',' ','q'
+    OUTPUT: 'u'
 
-Also included is a function to generate text using the RNN given the first 
-character.  
+The loss function compares (via categorical crossentropy) the prediction with the output/target.
+
+Also included is a function to generate text using the RNN given the first character.  
 
 About 20 or so epochs are necessary to generate text that "makes sense".
-
-Written by @keskarnitish
-Pre-processing of text uses snippets of Karpathy's code (BSD License)
+Written by @keskarnitish Pre-processing of text uses snippets of Karpathy's code (BSD License)
 '''
 
 from __future__ import print_function
-
 
 import numpy as np
 import theano
 import theano.tensor as T
 import lasagne
+
 import urllib2 #For downloading the sample text file. You won't need this if you are providing your own file.
+
+# load text file to train on
 try:
     in_text = urllib2.urlopen('https://s3.amazonaws.com/text-datasets/nietzsche.txt').read()
-    #You can also use your own file
-    #The file must be a simple text file.
-    #Simply edit the file name below and uncomment the line.  
-    #in_text = open('your_file.txt', 'r').read()
+    # You can also use your own file. The file must be a simple text file as below:
+    # in_text = open('your_file.txt', 'r').read()
     in_text = in_text.decode("utf-8-sig").encode("utf-8")
 except Exception as e:
     print("Please verify the location of the input file/URL.")
     print("A sample txt file can be downloaded from https://s3.amazonaws.com/text-datasets/nietzsche.txt")
     raise IOError('Unable to Read Text')
 
-generation_phrase = "The quick brown fox jumps" #This phrase will be used as seed to generate text.
-
-#This snippet loads the text file and creates dictionaries to 
-#encode characters into a vector-space representation and vice-versa. 
+# creates dictionary from characters to their index and vice-versa 
 chars = list(set(in_text))
 data_size, vocab_size = len(in_text), len(chars)
 char_to_ix = { ch:i for i,ch in enumerate(chars) }
 ix_to_char = { i:ch for i,ch in enumerate(chars) }
 
-#Lasagne Seed for Reproducibility
+# output generation seed:
+generation_phrase = "The quick brown fox jumps" #This phrase will be used as seed to generate text.
+
+
+# random seed for parameter reproducibility
 lasagne.random.set_rng(np.random.RandomState(1))
 
-# Sequence Length
-SEQ_LENGTH = 20
+#################################           LSTM parameters:
 
-# Number of units in the two hidden (LSTM) layers
-N_HIDDEN = 512
+SEQ_LENGTH = 20 # Sequence Length
 
-# Optimization learning rate
-LEARNING_RATE = .01
+N_HIDDEN = 512 # Cell size in each LSTM. This is eual to the output size of each LSTM node  (there are two hidden LSTM nodes each unrolled for t=20 iterations )
 
-# All gradients above this will be clipped
-GRAD_CLIP = 100
+BATCH_SIZE = 128 # Batch Size
 
-# How often should we check the output?
-PRINT_FREQ = 1000
+################################            SGD parameters:
 
-# Number of epochs to train the net
-NUM_EPOCHS = 50
+LEARNING_RATE = .01 # Optimization learning rate
+GRAD_CLIP = 100 # All gradients above this will be clipped
+PRINT_FREQ = 1000 # How often should we check the output?
+NUM_EPOCHS = 50 # Number of epochs to train the net
 
-# Batch Size
-BATCH_SIZE = 128
-
-
+# function to generate sentenses. used in the main SGD loop to see how the network is performing every couple of iterations 
 def gen_data(p, batch_size = BATCH_SIZE, data=in_text, return_target=True):
     '''
     This function produces a semi-redundant batch of training samples from the location 'p' in the provided string (data).
-    For instance, assuming SEQ_LENGTH = 5 and p=0, the function would create batches of 
-    5 characters of the string (starting from the 0th character and stepping by 1 for each semi-redundant batch)
-    as the input and the next character as the target.
-    To make this clear, let us look at a concrete example. Assume that SEQ_LENGTH = 5, p = 0 and BATCH_SIZE = 2
-    If the input string was "The quick brown fox jumps over the lazy dog.",
+    For instance, assuming SEQ_LENGTH = 5 and p=0, the function would create batches of 5 characters of the string (starting from the 0th character 
+    and stepping by 1 for each semi-redundant batch) as the input and the next character as the target.
+    As an example: Assume that SEQ_LENGTH = 5, p = 0, BATCH_SIZE = 2, and data = "The quick brown fox jumps over the lazy dog.",
     For the first data point,
-    x (the inputs to the neural network) would correspond to the encoding of 'T','h','e',' ','q'
-    y (the targets of the neural network) would be the encoding of 'u'
+        x (the inputs to the neural network) would correspond to the encoding of 'T','h','e',' ','q'
+        y (the targets of the neural network) would be the encoding of 'u'
     For the second point,
-    x (the inputs to the neural network) would correspond to the encoding of 'h','e',' ','q', 'u'
-    y (the targets of the neural network) would be the encoding of 'i'
-    The data points are then stacked (into a three-dimensional tensor of size (batch_size,SEQ_LENGTH,vocab_size))
-    and returned. 
+        x (the inputs to the neural network) would correspond to the encoding of 'h','e',' ','q', 'u'
+        y (the targets of the neural network) would be the encoding of 'i'
+    The data points are then stacked (into a three-dimensional tensor of size (batch_size,SEQ_LENGTH,vocab_size)) and returned. 
     Notice that there is overlap of characters between the batches (hence the name, semi-redundant batch).
     '''
+
+    # TODO: is that a one-hot scenario because it requires vocab_size in input?
+
     x = np.zeros((batch_size,SEQ_LENGTH,vocab_size))
     y = np.zeros(batch_size)
 
     for n in range(batch_size):
         ptr = n
         for i in range(SEQ_LENGTH):
-            x[n,i,char_to_ix[data[p+ptr+i]]] = 1.
+            x[n,i,char_to_ix[data[p+ptr+i]]] = 1.   # so this is indeed a one-hot of characters
         if(return_target):
             y[n] = char_to_ix[data[p+ptr+SEQ_LENGTH]]
     return x, np.array(y,dtype='int32')
@@ -137,9 +126,8 @@ def gen_data(p, batch_size = BATCH_SIZE, data=in_text, return_target=True):
 def main(num_epochs=NUM_EPOCHS):
     print("Building network ...")
    
-    # First, we build the network, starting with an input layer
-    # Recurrent layers expect input of shape
-    # (batch size, SEQ_LENGTH, num_features)
+    # Build the network
+    # Input layer: Recurrent layers expect input of shape: (batch size, SEQ_LENGTH, num_features)
 
     l_in = lasagne.layers.InputLayer(shape=(None, None, vocab_size))
 
@@ -154,10 +142,12 @@ def main(num_epochs=NUM_EPOCHS):
         l_forward_1, N_HIDDEN, grad_clipping=GRAD_CLIP,
         nonlinearity=lasagne.nonlinearities.tanh)
 
-    # The l_forward layer creates an output of dimension (batch_size, SEQ_LENGTH, N_HIDDEN)
+    # The l_forward layer creates an output of dimension (batch_size, SEQ_LENGTH, N_HIDDEN): 
+    # if batch_size = 1, the output of each unrolled LSTM would be N_HIDDEN (or cell size), and there are SEQ_LENGTH unrolled verisons of LSTM.
+    #
     # Since we are only interested in the final prediction, we isolate that quantity and feed it to the next layer. 
     # The output of the sliced layer will then be of size (batch_size, N_HIDDEN)
-    l_forward_slice = lasagne.layers.SliceLayer(l_forward_2, -1, 1)
+    l_forward_slice = lasagne.layers.SliceLayer(l_forward_2, -1, 1) # equals input[:,-1] : take N_HIDDEN of the last batch
 
     # The sliced output is then passed through the softmax nonlinearity to create probability distribution of the prediction
     # The output of this stage is (batch_size, vocab_size)
@@ -191,7 +181,7 @@ def main(num_epochs=NUM_EPOCHS):
     probs = theano.function([l_in.input_var],network_output,allow_input_downcast=True)
 
     # The next function generates text given a phrase of length at least SEQ_LENGTH.
-    # The phrase is set using the variable generation_phrase.[][][[][[]]]
+    # The phrase is set using the variable generation_phrase.
     # The optional input "N" is used to set the number of characters of text to predict. 
 
     def try_it_out(N=200):
