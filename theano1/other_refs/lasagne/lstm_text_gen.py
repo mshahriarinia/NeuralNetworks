@@ -1,4 +1,29 @@
 '''
+
+What they call an LSTM layer is nothing more than a single LSTM cell unrolled in time for SEQ_LENGTH time steps.
+Unlike a DNN with a context window of the same size, LSTM has a feed-forward/backward mechanism in time steps.
+    Input is sliced into overlapping chunks of SEQ_LENGTH
+    -- to account for batch processing, interleaves of SEQ_LENGTH chunks are fed to the network to make sure order is 
+       preserved for each batch item
+       
+       Here is an example of SEQ_LEN=5 and BATCH_SIZE=2. 
+        1  2  3  4  5
+       16 17 18 19 20
+       --------------
+        6  7  8  9 10
+       21 22 23 24 25
+       --------------
+       11 12 13 14 15
+       26 27 28 29 30
+
+       The only problem is that for 16-20, 21-25 and 26-30 h_{t-1} is not properly set, but it is just the initialization issue
+       and get diminished in the long-run
+
+    Cell size(h_t) is equal to the number of outputs being created at each time step. You can choose to use all the outputs or some of it,
+    as in many-to-many scenario of an LSTM. 
+
+
+
 Recurrent network example.  Trains a 2 layered LSTM network to learn
 text from a user-provided input file. The network can then be used to generate
 text using a short string as seed (refer to the variable generation_phrase).
