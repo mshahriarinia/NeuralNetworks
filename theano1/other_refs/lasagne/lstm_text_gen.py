@@ -52,6 +52,8 @@ import lasagne
 
 import urllib2 #For downloading the sample text file. You won't need this if you are providing your own file.
 
+##########################################################    Initialization
+
 # load text file to train on
 try:
     in_text = urllib2.urlopen('https://s3.amazonaws.com/text-datasets/nietzsche.txt').read()
@@ -69,27 +71,24 @@ data_size, vocab_size = len(in_text), len(chars)
 char_to_ix = { ch:i for i,ch in enumerate(chars) }
 ix_to_char = { i:ch for i,ch in enumerate(chars) }
 
-# output generation seed:
-generation_phrase = "The quick brown fox jumps" #This phrase will be used as seed to generate text.
-
-
-# random seed for parameter reproducibility
-lasagne.random.set_rng(np.random.RandomState(1))
-
-#################################           LSTM parameters:
+######           LSTM parameters:
 
 SEQ_LENGTH = 20 # Sequence Length
-
 N_HIDDEN = 512 # Cell size in each LSTM. This is eual to the output size of each LSTM node  (there are two hidden LSTM nodes each unrolled for t=20 iterations )
-
 BATCH_SIZE = 128 # Batch Size
 
-################################            SGD parameters:
+######            SGD parameters:
 
 LEARNING_RATE = .01 # Optimization learning rate
 GRAD_CLIP = 100 # All gradients above this will be clipped
 PRINT_FREQ = 1000 # How often should we check the output?
 NUM_EPOCHS = 50 # Number of epochs to train the net
+
+# random seed for parameter reproducibility
+lasagne.random.set_rng(np.random.RandomState(1))
+generation_phrase = "The quick brown fox jumps" # output generation seed: This phrase will be used as seed to generate text.
+
+##########################################################    Initialization
 
 # function to generate sentenses. used in the main SGD loop to see how the network is performing every couple of iterations 
 def gen_data(p, batch_size = BATCH_SIZE, data=in_text, return_target=True):
@@ -108,18 +107,18 @@ def gen_data(p, batch_size = BATCH_SIZE, data=in_text, return_target=True):
     Notice that there is overlap of characters between the batches (hence the name, semi-redundant batch).
     '''
 
-    # TODO: is that a one-hot scenario because it requires vocab_size in input?
-
+    # Is that a one-hot scenario because it requires vocab_size in input? Yes. x is one hot
+    # here batch size is one. 
     x = np.zeros((batch_size,SEQ_LENGTH,vocab_size))
     y = np.zeros(batch_size)
 
-    for n in range(batch_size):
+    for n in range(batch_size): # for each batch               -----> <<<<<<<fill each batch one by one, for each batch fill through the sequence  and specify the character there>>>>>>
         ptr = n
-        for i in range(SEQ_LENGTH):
+        for i in range(SEQ_LENGTH): # for each seq_length (unrolled time t)
             x[n,i,char_to_ix[data[p+ptr+i]]] = 1.   # so this is indeed a one-hot of characters
         if(return_target):
             y[n] = char_to_ix[data[p+ptr+SEQ_LENGTH]]
-    return x, np.array(y,dtype='int32')
+    return x, np.array(y,dtype='int32')  # x size(1,20,85) linux C container, y list:[0.0]
 
 
 
@@ -207,7 +206,7 @@ def main(num_epochs=NUM_EPOCHS):
 
         assert(len(generation_phrase)>=SEQ_LENGTH)
         sample_ix = []
-        x,_ = gen_data(len(generation_phrase)-SEQ_LENGTH, 1, generation_phrase,0)
+        x,_ = gen_data(len(generation_phrase)-SEQ_LENGTH, 1, generation_phrase,0) # sets batch size to 1. returned  x size(1,20,85) one hot. so it's just for text generation, so we just need a batch size of one to get just one sentence generate :)
 
         for i in range(N):
             # Pick the character that got assigned the highest probability
@@ -232,8 +231,8 @@ def main(num_epochs=NUM_EPOCHS):
             try_it_out() # Generate text using the p^th character as the start. 
             
             avg_cost = 0;
-            for _ in range(PRINT_FREQ):
-                x,y = gen_data(p)
+            for _ in range(PRINT_FREQ): # for frequency counts
+                x,y = gen_data(p) # p is current position
                 
                 #print(p)
                 p += SEQ_LENGTH + BATCH_SIZE - 1 
