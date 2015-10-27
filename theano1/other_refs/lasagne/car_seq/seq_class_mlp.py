@@ -39,11 +39,11 @@ from sklearn.datasets import load_svmlight_file
 def load_dataset():
     
     def get_data(file_name):
-      data = load_svmlight_file("/Users/morteza/Downloads/" + file_name)
+      data = load_svmlight_file("/old_local_homes/shahriari/zproject/car_sensor_data_new/data/marge_150304_003_07101409/171/" + file_name)
       return data[0], data[1]
     
-    X_train, y_train = get_data("train")    
-    X_test, y_test = get_data("test")
+    X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
+    X_test, y_test = get_data("test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")
     
     # We reserve the last 10000 training examples for validation. TODO
     X_train, X_val = X_train[:-10000], X_train[-10000:]
