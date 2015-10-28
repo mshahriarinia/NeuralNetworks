@@ -25,13 +25,14 @@ import sys
 import os
 import time
 
+from sklearn.datasets import load_svmlight_file
+
 import numpy as np
 import theano
 import theano.tensor as T
 
 import lasagne
 
-from sklearn.datasets import load_svmlight_file
 
 # ################## Download and prepare the dataset ##################
 # loading into numpy arrays. It doesn't involve Lasagne at all.
@@ -39,12 +40,15 @@ from sklearn.datasets import load_svmlight_file
 def load_dataset():
     
     def get_data(file_name):
-      data = load_svmlight_file("/old_local_homes/shahriari/zproject/car_sensor_data_new/data/marge_150304_003_07101409/171/" + file_name)
+      #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
+      data = load_svmlight_file("/data1/shahriari/" + file_name)
       return data[0], data[1]
     
-    X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
-    X_test, y_test = get_data("test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")
-    
+   # X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
+   # X_test, y_test = get_data("test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")
+    X_train, y_train = get_data("train.txt")    
+    X_test, y_test = get_data("test.txt")
+
     # We reserve the last 10000 training examples for validation. TODO
     X_train, X_val = X_train[:-10000], X_train[-10000:]
     y_train, y_val = y_train[:-10000], y_train[-10000:]
@@ -160,7 +164,7 @@ def main(model='mlp', num_epochs=500):
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
 
     # Prepare Theano variables for inputs and targets
-    input_var = T.tensor4('inputs')
+    input_var = T.matrix('inputs')
     target_var = T.ivector('targets')
 
     # Create neural network model (depending on first command line parameter)
