@@ -29,10 +29,14 @@ from sklearn.datasets import load_svmlight_file
 
 import numpy as np
 import theano
-import theano.tensor as T
+#import theano.tensor as T
+
+from theano import tensor as T, function, printing
 
 import lasagne
 
+from pprint import pprint
+import scipy.sparse as sps
 
 # ################## Download and prepare the dataset ##################
 # loading into numpy arrays. It doesn't involve Lasagne at all.
@@ -42,8 +46,12 @@ def load_dataset():
     def get_data(file_name):
       #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
       data = load_svmlight_file("/data1/shahriari/" + file_name)
-      print(data[0])
-      return data[0], data[1]
+      #print(data[0].shape)
+      pprint(data[1])
+      #print(sps.issparse(data[0]))
+
+      # libsvm format si sparse, here we convert to dense format. data should be of float type and labels of int32
+      return np.float32(data[0].todense()), data[1].astype(np.int32) 
     
    # X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
    # X_test, y_test = get_data("test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")
@@ -212,6 +220,8 @@ def main(model='mlp', num_epochs=500):
             print('======================================================================6')
             inputs, targets = batch            
             print('======================================================================7')
+            print(inputs.shape)
+            print(targets.shape)
             train_err += train_fn(inputs, targets)
             print('======================================================================8')
             train_batches += 1
