@@ -47,7 +47,7 @@ def load_dataset():
       #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
       data = load_svmlight_file("/data1/shahriari/" + file_name)
       #print(data[0].shape)
-      pprint(data[1])
+      #pprint(data[1])
       #print(sps.issparse(data[0]))
 
       # libsvm format si sparse, here we convert to dense format. data should be of float type and labels of int32
@@ -77,7 +77,7 @@ def build_mlp(input_var=None):
 
     # Input layer, specifying the expected input shape of the network
     # (batchsize 256, 728 channela) and linking it to the given Theano variable `input_var`, if any:
-    l_in = lasagne.layers.InputLayer(shape=(256, 728),
+    l_in = lasagne.layers.InputLayer(shape=(None, 728),
                                      input_var=input_var)
 
     # Apply 20% dropout to the input data:
@@ -194,20 +194,15 @@ def main(model='mlp', num_epochs=500):
     # Compile a function performing a training step on a mini-batch (by giving
     # the updates dictionary) and returning the corresponding training loss:
     print(input_var)
-    print('======================================================================1')
     print(target_var)
-    print('======================================================================2')
     print([input_var, target_var])
-    print('======================================================================3')
     train_fn = theano.function([input_var, target_var], loss, updates=updates)
 
 
-    print('======================================================================4')
 
     # Compile a second function computing the validation loss and accuracy:
     val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
-    print('======================================================================5')
     # Finally, launch the training loop.
     print("Starting training...")
     # We iterate over epochs:
@@ -217,13 +212,8 @@ def main(model='mlp', num_epochs=500):
         train_batches = 0
         start_time = time.time()
         for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):            
-            print('======================================================================6')
             inputs, targets = batch            
-            print('======================================================================7')
-            print(inputs.shape)
-            print(targets.shape)
             train_err += train_fn(inputs, targets)
-            print('======================================================================8')
             train_batches += 1
 
         # And a full pass over the validation data:
