@@ -42,6 +42,7 @@ def load_dataset():
     def get_data(file_name):
       #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
       data = load_svmlight_file("/data1/shahriari/" + file_name)
+      print(data[0])
       return data[0], data[1]
     
    # X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
@@ -141,11 +142,14 @@ def build_mlp(input_var=None):
 # several changes in the main program, though, and is not demonstrated here.
 
 def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
-    assert len(inputs) == len(targets)
+    #assert len(inputs) == len(targets)
+    assert inputs.shape[0] == targets.shape[0]
     if shuffle:
-        indices = np.arange(len(inputs))
+        #indices = np.arange(len(inputs))
+        indices = np.arange(inputs.shape[0])
         np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
+    #for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
+    for start_idx in range(0, inputs.shape[0] - batchsize + 1, batchsize):
         if shuffle:
             excerpt = indices[start_idx:start_idx + batchsize]
         else:
@@ -207,11 +211,21 @@ def main(model='mlp', num_epochs=500):
 
     # Compile a function performing a training step on a mini-batch (by giving
     # the updates dictionary) and returning the corresponding training loss:
+    print(input_var)
+    print('======================================================================1')
+    print(target_var)
+    print('======================================================================2')
+    print([input_var, target_var])
+    print('======================================================================3')
     train_fn = theano.function([input_var, target_var], loss, updates=updates)
+
+
+    print('======================================================================4')
 
     # Compile a second function computing the validation loss and accuracy:
     val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
+    print('======================================================================5')
     # Finally, launch the training loop.
     print("Starting training...")
     # We iterate over epochs:
@@ -220,9 +234,12 @@ def main(model='mlp', num_epochs=500):
         train_err = 0
         train_batches = 0
         start_time = time.time()
-        for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):
-            inputs, targets = batch
+        for batch in iterate_minibatches(X_train, y_train, 500, shuffle=True):            
+            print('======================================================================6')
+            inputs, targets = batch            
+            print('======================================================================7')
             train_err += train_fn(inputs, targets)
+            print('======================================================================8')
             train_batches += 1
 
         # And a full pass over the validation data:
