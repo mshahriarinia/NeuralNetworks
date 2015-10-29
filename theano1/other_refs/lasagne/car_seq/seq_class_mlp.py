@@ -25,7 +25,7 @@ import sys
 import os
 import time
 
-from sklearn.datasets import load_svmlight_file
+#from sklearn.datasets import load_svmlight_file
 
 import numpy as np
 import theano
@@ -42,21 +42,53 @@ import scipy.sparse as sps
 # loading into numpy arrays. It doesn't involve Lasagne at all.
 
 def load_dataset():
+
+    def svm_read_problem(data_file_name, dim):
+        """
+        svm_read_problem(data_file_name) -> [y, x]
+    Read LIBSVM-format data from data_file_name and return labels y
+    and data instances x.
+        """
+        prob_y = []
+        prob_x = []
+        for line in open(data_file_name):
+            line = line.split(None, 1)
+            # In case an instance with all zero features
+            if len(line) == 1: line += ['']
+            label, features = line
+            xi = {}
+            for e in features.split():
+                ind, val = e.split(":")
+                xi[int(ind)] = float(val)
+            prob_y += [int(label)-1]
+            prob_x += [xi]
+        input = zeros([len(prob_x),dim])
+        output = array(prob_y)
+        for i in range(len(prob_x)):
+            for inx in prob_x[i]:
+              input[i][inx-1] = prob_x[i][inx]
+        return (input, output)
+
     
-    def get_data(file_name):
+   # def get_data(file_name):
       #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
-      data = load_svmlight_file("/data1/shahriari/" + file_name)
+   #   data = load_svmlight_file("/data1/shahriari/" + file_name)
       #print(data[0].shape)
-      #pprint(data[1])
+   #   pprint(data[0])
       #print(sps.issparse(data[0]))
 
       # libsvm format si sparse, here we convert to dense format. data should be of float type and labels of int32
-      return np.float32(data[0].todense()), data[1].astype(np.int32) 
+    #  return np.float32(data[0].todense()), data[1].astype(np.int32) 
     
    # X_train, y_train = get_data("train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")    
    # X_test, y_test = get_data("test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm")
-    X_train, y_train = get_data("train.txt")    
-    X_test, y_test = get_data("test.txt")
+    #X_train, y_train = get_data("train.txt")    
+    #X_test, y_test = get_data("test.txt")
+
+    X_train, y_train = svm_read_problem("/data1/shahriari/train.txt")
+    X_test, y_test = svm_read_problem("/data1/shahriari/test.txt")
+
+   
 
     # We reserve the last 10000 training examples for validation. TODO
     X_train, X_val = X_train[:-10000], X_train[-10000:]
@@ -144,7 +176,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # more functions to better separate the code, but it wouldn't make it any
 # easier to read.
 
-def main(model='mlp', num_epochs=500):
+def main(model='mlp', num_epochs=50): # number of epochs can be 500 or even more if you like!
     # Load the dataset
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -153,18 +185,8 @@ def main(model='mlp', num_epochs=500):
     input_var = T.matrix('inputs')
     target_var = T.ivector('targets')
 
-    # Create neural network model (depending on first command line parameter)
     print("Building model and compiling functions...")
-    if model == 'mlp':
-        network = build_mlp(input_var)
-    elif model.startswith('custom_mlp:'):
-        depth, width, drop_in, drop_hid = model.split(':', 1)[1].split(',')
-        network = build_custom_mlp(input_var, int(depth), int(width),
-                                   float(drop_in), float(drop_hid))
-    elif model == 'cnn':
-        network = build_cnn(input_var)
-    else:
-        print("Unrecognized model type %r." % model)
+    network = build_mlp(input_var)
 
     # Create a loss expression for training, i.e., a scalar objective we want
     # to minimize (for our multi-class problem, it is the cross-entropy loss):
@@ -178,29 +200,21 @@ def main(model='mlp', num_epochs=500):
     # Descent (SGD) with Nesterov momentum, but Lasagne offers plenty more.
     params = lasagne.layers.get_all_params(network, trainable=True)
     updates = lasagne.updates.nesterov_momentum(
-            loss, params, learning_rate=0.01, momentum=0.9)
+            loss, params, learning_rate=0.0001, momentum=0.9)
 
     # Create a loss expression for validation/testing. The crucial difference
     # here is that we do a deterministic forward pass through the network,
     # disabling dropout layers.
     test_prediction = lasagne.layers.get_output(network, deterministic=True)
-    test_loss = lasagne.objectives.categorical_crossentropy(test_prediction,
-                                                            target_var)
+    test_loss = lasagne.objectives.categorical_crossentropy(test_prediction, target_var)
     test_loss = test_loss.mean()
-    # As a bonus, also create an expression for the classification accuracy:
-    test_acc = T.mean(T.eq(T.argmax(test_prediction, axis=1), target_var),
-                      dtype=theano.config.floatX)
+    # create an expression for the classification accuracy:
+    test_acc = T.mean(T.eq(T.argmax(test_prediction, axis=1), target_var), dtype=theano.config.floatX)
 
-    # Compile a function performing a training step on a mini-batch (by giving
-    # the updates dictionary) and returning the corresponding training loss:
-    print(input_var)
-    print(target_var)
-    print([input_var, target_var])
+    # Compile a function performing a training step on a mini-batch (by giving the updates dictionary) and returning the corresponding training loss:
     train_fn = theano.function([input_var, target_var], loss, updates=updates)
 
-
-
-    # Compile a second function computing the validation loss and accuracy:
+    # Compile a function computing the validation loss and accuracy:
     val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
     # Finally, launch the training loop.
@@ -261,10 +275,10 @@ def main(model='mlp', num_epochs=500):
 
 if __name__ == '__main__':
     if ('--help' in sys.argv) or ('-h' in sys.argv):
-        print("Trains a neural network on MNIST using Lasagne.")
+        print("Trains a DNN on sequence classification.")
         print("Usage: %s [MODEL [EPOCHS]]" % sys.argv[0])
         print()
-        print("MODEL: 'mlp' for a simple Multi-Layer Perceptron (MLP),")
+        print("MODEL: 'mlp' for a simple Multi-Layer Perceptron (MLP) a.k.a DNN,")
         print("       'custom_mlp:DEPTH,WIDTH,DROP_IN,DROP_HID' for an MLP")
         print("       with DEPTH hidden layers of WIDTH units, DROP_IN")
         print("       input dropout and DROP_HID hidden dropout,")
