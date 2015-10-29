@@ -105,43 +105,20 @@ def load_dataset():
 # the output layer of a neural network model built in Lasagne.
 
 def build_mlp(input_var=None):
-    # This creates an MLP of two hidden layers of 256 and 64 units each, followed by
-    # a softmax output layer of 2 units. It applies 20% dropout to the input
-    # data and 50% dropout to the hidden layers.
-
-    # Input layer, specifying the expected input shape of the network
-    # (batchsize 256, 728 channela) and linking it to the given Theano variable `input_var`, if any:
-    l_in = lasagne.layers.InputLayer(shape=(None, 728),
-                                     input_var=input_var)
-
-    # Apply 20% dropout to the input data:
+    
+    # Input layer, specifying the expected input shape of the network (batchsize 256, 728 channela) and linking it to the given Theano variable `input_var`, if any:
+    
+    l_in = lasagne.layers.InputLayer(shape=(None, 728), input_var=input_var)
     l_in_drop = lasagne.layers.DropoutLayer(l_in, p=0.2)
 
-    # Add a fully-connected layer of 256 units, using the linear rectifier, and
-    # initializing weights with Glorot's scheme (which is the default anyway):
-    l_hid1 = lasagne.layers.DenseLayer(
-            l_in_drop, num_units=256,
-            nonlinearity=lasagne.nonlinearities.rectify,
-            W=lasagne.init.GlorotUniform())
-
-    # We'll now add dropout of 50%:
+    l_hid1 = lasagne.layers.DenseLayer(l_in_drop, num_units=256, nonlinearity=lasagne.nonlinearities.rectify, W=lasagne.init.GlorotUniform())
     l_hid1_drop = lasagne.layers.DropoutLayer(l_hid1, p=0.5)
 
-    # Another 256-unit layer:
-    l_hid2 = lasagne.layers.DenseLayer(
-            l_hid1_drop, num_units=64,
-            nonlinearity=lasagne.nonlinearities.rectify)
-
-    # 50% dropout again:
+    l_hid2 = lasagne.layers.DenseLayer(l_hid1_drop, num_units=64, nonlinearity=lasagne.nonlinearities.rectify)
     l_hid2_drop = lasagne.layers.DropoutLayer(l_hid2, p=0.5)
 
-    # Finally, we'll add the fully-connected output layer, of 10 softmax units:
-    l_out = lasagne.layers.DenseLayer(
-            l_hid2_drop, num_units=2,
-            nonlinearity=lasagne.nonlinearities.softmax)
+    l_out = lasagne.layers.DenseLayer(l_hid2_drop, num_units=2, nonlinearity=lasagne.nonlinearities.softmax)
 
-    # Each layer is linked to its incoming layer(s), so we only need to pass
-    # the output layer to give access to a network in Lasagne:
     return l_out
 
 
@@ -174,52 +151,46 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 
 # ############################## Main program ################################
-# Everything else will be handled in our main program now. We could pull out
-# more functions to better separate the code, but it wouldn't make it any
-# easier to read.
+# We could add some weight decay as well here, checkout lasagne.regularization.
 
 def main(model='mlp', num_epochs=50): # number of epochs can be 500 or even more if you like!
-    # Load the dataset
+    
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
 
-    # Prepare Theano variables for inputs and targets
+    # Theano variables for inputs and targets
     input_var = T.matrix('inputs')
     target_var = T.ivector('targets')
 
     print("Building model and compiling functions...")
     network = build_mlp(input_var)
 
-    # Create a loss expression for training, i.e., a scalar objective we want
-    # to minimize (for our multi-class problem, it is the cross-entropy loss):
+    # #################### Loss expressions
+    # Loss expression for training, i.e., a scalar objective we want to minimize (for our multi-class problem, it is the cross-entropy loss):
     prediction = lasagne.layers.get_output(network)
-    loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
-    loss = loss.mean()
-    # We could add some weight decay as well here, see lasagne.regularization.
+    train_loss = lasagne.objectives.categorical_crossentropy(prediction, target_var)
+    train_loss = train_loss.mean()  
 
-    # Create update expressions for training, i.e., how to modify the
-    # parameters at each training step. Here, we'll use Stochastic Gradient
-    # Descent (SGD) with Nesterov momentum, but Lasagne offers plenty more.
-    params = lasagne.layers.get_all_params(network, trainable=True)
-    updates = lasagne.updates.nesterov_momentum(
-            loss, params, learning_rate=0.0001, momentum=0.9)
-
-    # Create a loss expression for validation/testing. The crucial difference
-    # here is that we do a deterministic forward pass through the network,
-    # disabling dropout layers.
+    # Loss expression for validation/test. Difference: We do a deterministic forward pass through the network, disabling dropout layers
     test_prediction = lasagne.layers.get_output(network, deterministic=True)
     test_loss = lasagne.objectives.categorical_crossentropy(test_prediction, target_var)
     test_loss = test_loss.mean()
-    # create an expression for the classification accuracy:
+
+    # #################### Test accuracy
+    # Expression for the classification accuracy:
     test_acc = T.mean(T.eq(T.argmax(test_prediction, axis=1), target_var), dtype=theano.config.floatX)
 
+    # Create update expressions for training. Here, we'll use Stochastic Gradient Descent (SGD) with Nesterov momentum
+    params = lasagne.layers.get_all_params(network, trainable=True)
+    updates = lasagne.updates.nesterov_momentum(train_loss, params, learning_rate=0.0001, momentum=0.9)
+
+
     # Compile a function performing a training step on a mini-batch (by giving the updates dictionary) and returning the corresponding training loss:
-    train_fn = theano.function([input_var, target_var], loss, updates=updates)
+    train_fn = theano.function([input_var, target_var], train_loss, updates=updates)
 
     # Compile a function computing the validation loss and accuracy:
     val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
-    # Finally, launch the training loop.
     print("Starting training...")
     # We iterate over epochs:
     for epoch in range(num_epochs):
