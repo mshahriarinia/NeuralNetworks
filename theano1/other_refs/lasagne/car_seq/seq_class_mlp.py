@@ -62,19 +62,19 @@ def load_dataset():
                 xi[int(ind)] = float(val)
             prob_y += [int(label)-1]
             prob_x += [xi]
-        input = zeros([len(prob_x),dim])
-        output = array(prob_y)
+        input = np.zeros([len(prob_x),dim])
+        output = np.array(prob_y)
         for i in range(len(prob_x)):
             for inx in prob_x[i]:
               input[i][inx-1] = prob_x[i][inx]
-        return (input, output)
+        return (np.float32(input), output.astype(np.int32))
 
     
    # def get_data(file_name):
       #data = load_svmlight_file("/remote/pazu/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/" + file_name)
    #   data = load_svmlight_file("/data1/shahriari/" + file_name)
       #print(data[0].shape)
-   #   pprint(data[0])
+      #pprint(data[0])
       #print(sps.issparse(data[0]))
 
       # libsvm format si sparse, here we convert to dense format. data should be of float type and labels of int32
@@ -85,11 +85,13 @@ def load_dataset():
     #X_train, y_train = get_data("train.txt")    
     #X_test, y_test = get_data("test.txt")
 
-    X_train, y_train = svm_read_problem("/data1/shahriari/train.txt")
-    X_test, y_test = svm_read_problem("/data1/shahriari/test.txt")
+    X_train, y_train = svm_read_problem("/data1/shahriari/train.txt", 728)
+    X_test, y_test = svm_read_problem("/data1/shahriari/test.txt", 728)
 
    
 
+    pprint(X_train)
+    
     # We reserve the last 10000 training examples for validation. TODO
     X_train, X_val = X_train[:-10000], X_train[-10000:]
     y_train, y_val = y_train[:-10000], y_train[-10000:]
