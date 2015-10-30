@@ -134,10 +134,16 @@ def main(num_epochs=5, minibatch_size=500):
 
     # Compile a function performing a training step on a mini-batch (by giving the updates dictionary) and returning the corresponding training loss:
     train_fn = theano.function([input_var, target_var], train_loss, updates=updates)
-
     # Compile a function computing the validation loss and accuracy:
     val_fn = theano.function([input_var, target_var], [test_loss, test_acc])
 
+    # ############################### Debugging output capabilities
+    layers = lasagne.layers.get_all_layers(network)
+    activations = lasagne.layers.get_output(layers)
+    activation_fn= theano.function([input_var], activations[2])
+    
+    
+    # ####
 
     print("Starting training...")
     for epoch in range(num_epochs):
@@ -154,10 +160,11 @@ def main(num_epochs=5, minibatch_size=500):
         val_acc = 0
         for batch in iterate_minibatches(X_val, y_val, minibatch_size, shuffle=False):
             inputs, targets = batch
-            #print(inputs[0,])
-            #print(prediction)
-            #print(l_out.get_output(input=np.ones(1,728)).eval())
-            print(lasagne.layers.get_output(l_out, inputs=np.float32(np.ones((1,728)))))
+            #print(lasagne.layers.get_output(l_out, inputs=np.float32(np.ones((1,728)))))
+            #print(activations[2].get_value())
+            print( activation_fn(inputs))
+            #myfcn = theano.function(activations[2])
+            #print(myfcn(np.float32(np.ones((1,728)))))
             err, acc = val_fn(inputs, targets)
             val_err += err
             val_acc += acc
@@ -181,8 +188,7 @@ def main(num_epochs=5, minibatch_size=500):
         test_batches += 1
     print("Final results:")
     print("  test loss:\t\t\t{:.6f}".format(test_err / test_batches))
-    print("  test accuracy:\t\t{:.2f} %".format(
-        test_acc / test_batches * 100))
+    print("  test accuracy:\t\t{:.2f} %".format(test_acc / test_batches * 100))
 
     # Optionally, you could now dump the network weights to a file like this:
     # np.savez('model.npz', *lasagne.layers.get_all_param_values(network))
