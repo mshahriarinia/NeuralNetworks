@@ -53,6 +53,8 @@ def load_dataset():
     X_test, y_test = svm_read_problem("/data1/shahriari/test.txt", 728)
   
     # Take the last 10000 training examples for validation. TODO
+    # take 10% instead
+
     X_train, X_val = X_train[:-10000], X_train[-10000:]
     y_train, y_val = y_train[:-10000], y_train[-10000:]
 
@@ -80,7 +82,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # ############################## Main program ################################
 # We could add some weight decay as well here, checkout lasagne.regularization.
 
-def main(num_epochs=50, minibatch_size=500):
+def main(num_epochs=5, minibatch_size=500):
     
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -100,10 +102,10 @@ def main(num_epochs=50, minibatch_size=500):
     l_in = lasagne.layers.InputLayer(shape=(None, 728), input_var=input_var)
     l_in_drop = lasagne.layers.DropoutLayer(l_in, p=0.2)
 
-    l_hid1 = lasagne.layers.DenseLayer(l_in_drop, num_units=256, nonlinearity=lasagne.nonlinearities.rectify, W=lasagne.init.GlorotUniform())
+    l_hid1 = lasagne.layers.DenseLayer(l_in_drop, num_units=256, nonlinearity=lasagne.nonlinearities.sigmoid, W=lasagne.init.GlorotUniform())
     l_hid1_drop = lasagne.layers.DropoutLayer(l_hid1, p=0.5)
 
-    l_hid2 = lasagne.layers.DenseLayer(l_hid1_drop, num_units=64, nonlinearity=lasagne.nonlinearities.rectify, W=lasagne.init.GlorotUniform())
+    l_hid2 = lasagne.layers.DenseLayer(l_hid1_drop, num_units=64, nonlinearity=lasagne.nonlinearities.sigmoid, W=lasagne.init.GlorotUniform())
     l_hid2_drop = lasagne.layers.DropoutLayer(l_hid2, p=0.5)
 
     l_out = lasagne.layers.DenseLayer(l_hid2_drop, num_units=2, nonlinearity=lasagne.nonlinearities.softmax)
@@ -150,14 +152,15 @@ def main(num_epochs=50, minibatch_size=500):
         # Full pass over the validation data:
         val_err = 0
         val_acc = 0
-        val_batches = 0
         for batch in iterate_minibatches(X_val, y_val, minibatch_size, shuffle=False):
             inputs, targets = batch
             #print(inputs[0,])
+            #print(prediction)
+            #print(l_out.get_output(input=np.ones(1,728)).eval())
+            print(lasagne.layers.get_output(l_out, inputs=np.float32(np.ones((1,728)))))
             err, acc = val_fn(inputs, targets)
             val_err += err
             val_acc += acc
-            val_batches += 1
 
         print("Epoch {} of {} took {:.3f}s".format(epoch + 1, num_epochs, time.time() - start_time))
         print("  training loss:\t\t{:.6f}".format(train_err / train_batches))
