@@ -40,7 +40,10 @@ def load_dataset():
             for e in features.split():
                 ind, val = e.split(":")
                 xi[int(ind)] = float(val)
-            #prob_y += [int(label)-1]
+            #prob_y += [int(label)-1] 
+            # The problem was that libsvm labels were provided in {0,1}, however in standard form it should have been {1,2} 
+            # (hence the assumption in all libsvm loaders and subtracting class labels by one). By adjusting that and not subtracting 
+            # from one, it worked!
             prob_y += [int(label)]
             prob_x += [xi]
         input = np.zeros([len(prob_x),dim])
@@ -50,9 +53,12 @@ def load_dataset():
               input[i][inx-1] = prob_x[i][inx]
         return (np.float32(input), output.astype(np.int32))
     
-    X_train, y_train = svm_read_problem("/data1/shahriari/train.txt", 728)
-    X_test, y_test = svm_read_problem("/data1/shahriari/test.txt", 728)
-  
+    #X_train, y_train = svm_read_problem("/data1/shahriari/train.txt", 728)
+    #X_test, y_test = svm_read_problem("/data1/shahriari/test.txt", 728)
+    DATA_PATH = "/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/"
+    X_train, y_train = svm_read_problem(DATA_PATH+"train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm", 728)
+    X_test, y_test = svm_read_problem(DATA_PATH + "test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm", 728)
+
     # Take the last 10000 training examples for validation. TODO
     # take 10% instead
 
