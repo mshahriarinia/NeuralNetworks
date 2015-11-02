@@ -147,11 +147,11 @@ def main(num_epochs=5, minibatch_size=1):  # TODO set minibatch higher e.g. 500
             )
    
 
-    test_acc0 = T.eq(T.argmax(test_prediction, axis=1), target_var)
-    test_acc1 = T.argmax(test_prediction, axis=1)
+    #test_acc0 = T.eq(T.argmax(test_prediction, axis=1), target_var)
+    #test_acc1 = T.argmax(test_prediction, axis=1)
 
-    test_acc0_fn =  theano.function([input_var, target_var], test_acc0)
-    test_acc1_fn =  theano.function([input_var], test_acc1)
+   # test_acc0_fn =  theano.function([input_var, target_var], test_acc0)
+   # test_acc1_fn =  theano.function([input_var], test_acc1)
 
     
     # ####
@@ -171,9 +171,9 @@ def main(num_epochs=5, minibatch_size=1):  # TODO set minibatch higher e.g. 500
         val_acc = 0
         for batch in iterate_minibatches(X_val, y_val, minibatch_size, shuffle=False):
             inputs, targets = batch
-            print( activation_fn(inputs))
-            print(test_acc0_fn([inputs,targets]))
-            print(test_acc1_fn(inputs))
+           # print( activation_fn(inputs))
+           # print(test_acc0_fn([inputs,targets]))
+           # print(test_acc1_fn(inputs))
             
 
             err, acc = val_fn(inputs, targets)
