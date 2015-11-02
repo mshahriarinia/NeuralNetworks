@@ -1,5 +1,6 @@
 '''
    TODO lasagne seed initializetion
+   TODO calculate hwo many layers/parameters for network and how layers are connected
    (c) Morteza Shahriari Nia (http://mshahriarinia.com)
 '''
 from __future__ import print_function
