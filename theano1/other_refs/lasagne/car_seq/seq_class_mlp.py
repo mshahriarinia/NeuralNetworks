@@ -1,5 +1,6 @@
 '''
    TODO lasagne seed initializetion
+   (c) Morteza Shahriari Nia (http://mshahriarinia.com)
 '''
 from __future__ import print_function
 
@@ -89,7 +90,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # ############################## Main program ################################
 # We could add some weight decay as well here, checkout lasagne.regularization.
 
-def main(num_epochs=5, minibatch_size=1):  # TODO set minibatch higher e.g. 500
+def main(num_epochs=5, minibatch_size=500):  # TODO set minibatch higher e.g. 500
     
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
