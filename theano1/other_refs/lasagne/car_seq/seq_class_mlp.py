@@ -40,7 +40,8 @@ def load_dataset():
             for e in features.split():
                 ind, val = e.split(":")
                 xi[int(ind)] = float(val)
-            prob_y += [int(label)-1]
+            #prob_y += [int(label)-1]
+            prob_y += [int(label)]
             prob_x += [xi]
         input = np.zeros([len(prob_x),dim])
         output = np.array(prob_y)
@@ -82,7 +83,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # ############################## Main program ################################
 # We could add some weight decay as well here, checkout lasagne.regularization.
 
-def main(num_epochs=5, minibatch_size=500):
+def main(num_epochs=5, minibatch_size=1):  # TODO set minibatch higher e.g. 500
     
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -140,8 +141,18 @@ def main(num_epochs=5, minibatch_size=500):
     # ############################### Debugging output capabilities
     layers = lasagne.layers.get_all_layers(network)
     activations = lasagne.layers.get_output(layers)
-    activation_fn= theano.function([input_var], activations[2])
-    
+    print(activations) 
+    # [inputs, Elemwise{mul,no_inplace}.0, sigmoid.0, Elemwise{mul,no_inplace}.0, sigmoid.0, Elemwise{mul,no_inplace}.0, Softmax.0]
+    activation_fn= theano.function([input_var], activations[6]
+            )
+   
+
+    test_acc0 = T.eq(T.argmax(test_prediction, axis=1), target_var)
+    test_acc1 = T.argmax(test_prediction, axis=1)
+
+    test_acc0_fn =  theano.function([input_var, target_var], test_acc0)
+    test_acc1_fn =  theano.function([input_var], test_acc1)
+
     
     # ####
 
@@ -160,11 +171,11 @@ def main(num_epochs=5, minibatch_size=500):
         val_acc = 0
         for batch in iterate_minibatches(X_val, y_val, minibatch_size, shuffle=False):
             inputs, targets = batch
-            #print(lasagne.layers.get_output(l_out, inputs=np.float32(np.ones((1,728)))))
-            #print(activations[2].get_value())
             print( activation_fn(inputs))
-            #myfcn = theano.function(activations[2])
-            #print(myfcn(np.float32(np.ones((1,728)))))
+            print(test_acc0_fn([inputs,targets]))
+            print(test_acc1_fn(inputs))
+            
+
             err, acc = val_fn(inputs, targets)
             val_err += err
             val_acc += acc
