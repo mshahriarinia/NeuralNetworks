@@ -46,7 +46,10 @@ def load_dataset():
             # The problem was that libsvm labels were provided in {0,1}, however in standard form it should have been {1,2} 
             # (hence the assumption in all libsvm loaders and subtracting class labels by one). By adjusting that and not subtracting 
             # from one, it worked!
-            prob_y += [int(label)]
+            if int(label) == 1:
+                prob_y += [1]
+            elif int(label) == -1:
+                prob_y += [2]
             prob_x += [xi]
         input = np.zeros([len(prob_x),dim])
         output = np.array(prob_y)
@@ -54,7 +57,10 @@ def load_dataset():
             for inx in prob_x[i]:
               input[i][inx-1] = prob_x[i][inx]
         return (np.float32(input), output.astype(np.int32))
-    
+   
+    start_time = time.time()
+
+    # libsvm format si sparse, here we convert to dense format. data should be of float type and labels of int32
     #X_train, y_train = svm_read_problem("/data1/shahriari/train.txt", 728)
     #X_test, y_test = svm_read_problem("/data1/shahriari/test.txt", 728)
     DATA_PATH = "/data1/chori/work/DriverStatus/open/data4libsvm/w1/data/marge_150304_003_07101409/171/"
@@ -66,6 +72,8 @@ def load_dataset():
 
     X_train, X_val = X_train[:-10000], X_train[-10000:]
     y_train, y_val = y_train[:-10000], y_train[-10000:]
+
+    print("Loading the dataset took {:.3f}s".format( time.time() - start_time))
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
@@ -91,7 +99,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # ############################## Main program ################################
 # We could add some weight decay as well here, checkout lasagne.regularization.
 
-def main(num_epochs=5, minibatch_size=500):  # TODO set minibatch higher e.g. 500
+def main(num_epochs=50, minibatch_size=2048):  # TODO set minibatch higher e.g. 500
     
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
