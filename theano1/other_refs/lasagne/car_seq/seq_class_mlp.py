@@ -1,6 +1,42 @@
 '''
    TODO lasagne seed initializetion
    TODO calculate hwo many layers/parameters for network and how layers are connected
+
+    Here is some statistics on data:
+    $ cat train_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm | cut -d ' ' -f1  | sort | uniq -c
+        13798 +1
+        536450 -1
+    $ cat test_marge_150304_003_07101409.171_5-165,167-170,172-183_0.libsvm | cut -d ' ' -f1  | sort | uniq -c
+        1145 +1
+        79679 -1
+
+
+    Here is how eq and argmax work:
+     >>> import theano
+     >>> import theano.tensor as T
+     >>> x0 = T.scalar()
+     >>> x1 = T.scalar()
+     >>> z = T.eq(x0,x1)
+     >>> f = theano.function([x0,x1], z)
+     >>> f(0,1)
+     array(0, dtype=int8)
+     >>> f(0,0)
+     array(1, dtype=int8)
+     >>> f(22,22)
+     array(1, dtype=int8)
+     >>> f(22,221)
+     array(0, dtype=int8)
+     
+     >>> m = T.matrix()
+     >>> fm = theano.function([m], T.argmax(m))
+     >>> fm([[1, 2],  [3, 4]])
+     array(3)
+     >>> fm = theano.function([m], T.argmax(m, axis = 1))
+     >>> fm([[1, 2],  [3, 4]])
+     array([1, 1])
+     >>> fm([[10, 2],  [3, 4]])
+     array([0, 1])
+     
    (c) Morteza Shahriari Nia (http://mshahriarinia.com)
 '''
 from __future__ import print_function
@@ -49,7 +85,7 @@ def load_dataset():
             if int(label) == 1:
                 prob_y += [1]
             elif int(label) == -1:
-                prob_y += [2]
+                prob_y += [0]
             prob_x += [xi]
         input = np.zeros([len(prob_x),dim])
         output = np.array(prob_y)
@@ -99,7 +135,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 # ############################## Main program ################################
 # We could add some weight decay as well here, checkout lasagne.regularization.
 
-def main(num_epochs=50, minibatch_size=2048):  # TODO set minibatch higher e.g. 500
+def main(num_epochs=5, minibatch_size=2048):  # TODO set minibatch higher e.g. 500
     
     print("Loading data...")
     X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -142,11 +178,12 @@ def main(num_epochs=50, minibatch_size=2048):  # TODO set minibatch higher e.g. 
 
     # #################### Test accuracy
     # Expression for the classification accuracy:
+    # 
     test_acc = T.mean(T.eq(T.argmax(test_prediction, axis=1), target_var), dtype=theano.config.floatX) # TODO axis=1
 
     # Create update expressions for training. Here, we'll use Stochastic Gradient Descent (SGD) with Nesterov momentum
     params = lasagne.layers.get_all_params(network, trainable=True)
-    updates = lasagne.updates.nesterov_momentum(train_loss, params, learning_rate=0.0001, momentum=0.9)
+    updates = lasagne.updates.nesterov_momentum(train_loss, params, learning_rate=0.01, momentum=0.9)
 
 
     # Compile a function performing a training step on a mini-batch (by giving the updates dictionary) and returning the corresponding training loss:
