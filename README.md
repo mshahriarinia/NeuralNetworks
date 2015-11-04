@@ -1,17 +1,11 @@
 NeuralNetworks
 ==============
 
-cat .~/.theanorc
-
-[global]
-
-device = gpu
-
-floatX = float32
-
-
-[cuda]
-
-root=/usr/local/cuda
-
-nocleanup = True
+$ vim ~/.theanorc
+    cat .~/.theanorc
+    [global]
+    device = gpu
+    floatX = float32
+    [cuda]
+    root=/usr/local/cuda
+    nocleanup = True
