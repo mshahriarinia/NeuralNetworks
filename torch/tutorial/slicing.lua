@@ -1,13 +1,12 @@
-----------------------------------------------------------------------
--- slicing.lua
--- 
--- This script demonstrates tensor slicing / manipulation.
+--[[
+This script demonstrates tensor slicing / manipulation.
 
--- To run this script, simply do:
--- $ th A_slicing.lua
--- and then press 'y' or 'return' at each step, to keep going.
+To run:
+   $ th A_slicing.lua
 
--- little function to pause execution, and request user input
+--]]
+
+-- Auxiliary function to pause execution, and request user input
 function next()
    local answer = nil
    while answer ~= '' and answer ~= 'y' and answer ~= 'Y' and neverstall ~= true do
