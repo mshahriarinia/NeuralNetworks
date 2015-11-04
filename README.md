@@ -2,6 +2,7 @@ NeuralNetworks
 ==============
 
 $ vim ~/.theanorc
+
     cat .~/.theanorc
     [global]
     device = gpu
