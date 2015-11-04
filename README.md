@@ -3,6 +3,7 @@ NeuralNetworks
 
 $ vim ~/.theanorc
 
+```
     cat .~/.theanorc
     [global]
     device = gpu
@@ -10,3 +11,4 @@ $ vim ~/.theanorc
     [cuda]
     root=/usr/local/cuda
     nocleanup = True
+```
