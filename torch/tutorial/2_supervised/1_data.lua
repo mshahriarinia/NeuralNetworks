@@ -1,26 +1,31 @@
-----------------------------------------------------------------------
--- This script demonstrates how to load the (SVHN) House Numbers 
--- training data, and pre-process it to facilitate learning.
---
--- The SVHN is a typical example of supervised training dataset.
--- The problem to solve is a 10-class classification problem, similar
--- to the quite known MNIST challenge.
---
--- It's a good idea to run this script with the interactive mode:
--- $ th -i 1_data.lua
--- this will give you a Torch interpreter at the end, that you
--- can use to analyze/visualize the data you've just loaded.
---
--- Clement Farabet
-----------------------------------------------------------------------
+--[[
+Load the Street View House Number (SVHN) data and pre-process it for 10-class classification like MNIST.
+
+mattorch
+    Files were converted from their original Matlab format to Torch's internal format using the mattorch package. 
+    The mattorch package allows 1-to-1 conversion between Torch and Matlab files.
+
+
+By running this script in interactive mode a Torch interpreter at will be left the end, so you can analyze/visualize data
+    $ th -i 1_data.lua
+
+The SVHN dataset contains 3 files:
+    + train: training data
+    + test:  test data
+    + extra: extra training data
+By default, we don't use the extra training data, as it is much more time consuming
+
+Source: Clement Farabet
+--]]
+
 
 require 'torch'   -- torch
 require 'image'   -- for color transforms
 require 'nn'      -- provides a normalization operator
 
-----------------------------------------------------------------------
--- parse command line arguments
-if not opt then
+----------------------------  Process commandline arguments
+
+if not opt then   -- parse command line arguments
    print '==> processing options'
    cmd = torch.CmdLine()
    cmd:text()
@@ -33,23 +38,8 @@ if not opt then
    opt = cmd:parse(arg or {})
 end
 
-----------------------------------------------------------------------
+---------------------------     Download data
 print '==> downloading dataset'
-
--- Here we download dataset files. 
-
--- Note: files were converted from their original Matlab format
--- to Torch's internal format using the mattorch package. The
--- mattorch package allows 1-to-1 conversion between Torch and Matlab
--- files.
-
--- The SVHN dataset contains 3 files:
---    + train: training data
---    + test:  test data
---    + extra: extra training data
-
--- By default, we don't use the extra training data, as it is much 
--- more time consuming
 
 www = 'http://torch7.s3-website-us-east-1.amazonaws.com/data/housenumbers/'
 
@@ -67,8 +57,7 @@ if opt.size == 'extra' and not paths.filep(extra_file) then
    os.execute('wget ' .. www .. extra_file)   
 end
 
-----------------------------------------------------------------------
--- training/test size
+--------------------------      set training/test size
 
 if opt.size == 'extra' then
    print '==> using extra training data'
@@ -84,26 +73,28 @@ elseif opt.size == 'small' then
    tesize = 2000
 end
 
-----------------------------------------------------------------------
+--------------------------    Load data
 print '==> loading dataset'
 
--- We load the dataset from disk, and re-arrange it to be compatible
--- with Torch's representation. Matlab uses a column-major representation,
--- Torch is row-major, so we just have to transpose the data.
 
--- Note: the data, in X, is 4-d: the 1st dim indexes the samples, the 2nd
--- dim indexes the color channels (RGB), and the last two dims index the
--- height and width of the samples.
+--[[
+loaded
+  {
+    y : DoubleTensor - size: 1x26032
+    X : ByteTensor - size: 26032x3x32x32   X is 4-d: samples index, color channel index (RGB), height index, and width index
+  }
+--]] 
+
+
 
 loaded = torch.load(train_file,'ascii')
 trainData = {
-   data = loaded.X:transpose(3,4),
+   data = loaded.X:transpose(3,4),           -- Matlab is column-major, Torch is row-major. so we transpose the data:  [tensor].transpose(dim1, dim2)
    labels = loaded.y[1],
-   size = function() return trsize end
+   size = function() return trsize end       -- trsize is set above.
 }
 
--- If extra data is used, we load the extra file, and then
--- concatenate the two training sets.
+-- If extra data is used, we load the extra file, and then concatenate the two training sets.
 
 -- Torch's slicing syntax can be a little bit frightening. I've
 -- provided a little tutorial on this, in this same directory:
