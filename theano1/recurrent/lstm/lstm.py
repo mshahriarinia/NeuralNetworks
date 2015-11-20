@@ -1,6 +1,10 @@
-'''
-Build a tweet sentiment analyzer
-'''
+"""
+Task: Given a movie review text sequence, predict whether it is positive or negative (binary classification)
+
+Original dataset: http://ai.stanford.edu/~amaas/data/sentiment/
+To preprocess, use: imdb_preprocess.py  data for this example has already been preprocessed.
+"""
+
 from collections import OrderedDict
 import cPickle as pkl
 import sys
@@ -33,12 +37,10 @@ def get_minibatches_idx(n, minibatch_size, shuffle=False):
     minibatches = []
     minibatch_start = 0
     for i in range(n // minibatch_size):
-        minibatches.append(idx_list[minibatch_start:
-                                    minibatch_start + minibatch_size])
+        minibatches.append(idx_list[minibatch_start: minibatch_start + minibatch_size])
         minibatch_start += minibatch_size
 
-    if (minibatch_start != n):
-        # Make a minibatch out of what is left
+    if (minibatch_start != n):      # Make a minibatch out of what is left
         minibatches.append(idx_list[minibatch_start:])
 
     return zip(range(len(minibatches)), minibatches)
@@ -69,9 +71,7 @@ def unzip(zipped):
 def dropout_layer(state_before, use_noise, trng):
     proj = tensor.switch(use_noise,
                          (state_before *
-                          trng.binomial(state_before.shape,
-                                        p=0.5, n=1,
-                                        dtype=state_before.dtype)),
+                          trng.binomial(state_before.shape, p=0.5, n=1, dtype=state_before.dtype)),
                          state_before * 0.5)
     return proj
 
