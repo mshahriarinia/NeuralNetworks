@@ -1,6 +1,4 @@
    ######################################################################################
-   ######################################################################################
-   ######################################################################################
 
 class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, initial_bias=None)
         The weight matrix W has shape (out_size, in_size).
@@ -18,8 +16,6 @@ class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, i
 
         It provides a funciton linear(x, W, b) to be used without class.
 
-   ######################################################################################
-   ######################################################################################
    ######################################################################################
 
 In an LSTM we have the following gates:
@@ -72,7 +68,7 @@ class LSTM
 				>>> x = model.w(y) + model.v(h)    # this h is h_{t-1}
 				>>> c, h = F.lstm(c, x)            # this h is h_t
 ```
-	It corresponds to calculate the input sources `a`,`i`,`f`,`o` from the current input `y` and the previous output `h`. Different parameters are used for different kind of input sources.
+It corresponds to calculate the input sources `a`,`i`,`f`,`o` from the current input `y` and the previous output `h`. Different parameters are used for different kind of input sources.
 
 
 
