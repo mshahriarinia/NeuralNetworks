@@ -32,14 +32,21 @@ In an LSTM we have the following gates:
 ```
 
 So, in Chainer, we concatenate `[W_i, W_C, W_f, W_o]`  as `'w'` in the Example 1 below, and concatenate `[U_i, U_C, U_f, U_o]` as `'v'` in Example 1 below.
+				
 				Then multiply 'w' to y (current input signal) and multiply `'v'` to `h` (previous "output" signal)(same as above `h_{t-1}`). O.K.
+				
 				Then feed them to LSTM to do the sigmas and tanhs and print out `C_t` and `h_t`.
+				
 				NOTE: Chainer's implementation is missing the `V_o * C_t` term. No big deal just be mindful of that. It caused a bit of a confusion.		 	 	  
 
 class LSTM
+	
 	It has two inputs `(c, x)` and two outputs `(c, h)`, where
+		
 		`c` indicates the cell state.
+		
 		`x` must have four times channels compared to the number of units. (concatenation of four weight matrices used in LSTM.
+
 ```python
 	LSTM.forward(c_prev, x):
 		a, i, f, o = _extract_gates(x)
@@ -59,8 +66,10 @@ class LSTM
 	return (c,h)   # `h` is the output signal, `c` is the updated cell state.
 ```     
 ####-------------------------------------------------------------------------------------
-  Example:
+  *Example*:
+  
 	    Assume `y` is the current input signal, `c` is the previous cell state, and `h` is the previous output signal from an lstm function. (`y`, `c` and `h` have `n_units` channels). Most typical preparation of `x` is:
+
 ```python	 
 				>>> model = FunctionSet(w=F.Linear(n_units, 4 * n_units),
 				...                     v=F.Linear(n_units, 4 * n_units),
@@ -68,8 +77,6 @@ class LSTM
 				>>> x = model.w(y) + model.v(h)    # this h is h_{t-1}
 				>>> c, h = F.lstm(c, x)            # this h is h_t
 ```
+
 It corresponds to calculate the input sources `a`,`i`,`f`,`o` from the current input `y` and the previous output `h`. Different parameters are used for different kind of input sources.
 
-
-
-Note: `i_t=sigmoid(W_i * x_t + U_i * h_{t-1} + b_i)`
