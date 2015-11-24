@@ -23,7 +23,7 @@ class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, i
    ######################################################################################
 
 In an LSTM we have the following gates:
-```
+```latex
   i_t         = sigma(W_i* xt + U_i * h_{t-1} + b_i)
 	\tilde{C}_t =  tanh(W_C* xt + U_C * h_{t-1} + b_C)        # in Chainer terms \tilde{C}_t === a
   f_t         = sigma(W_f* xt + U_f * h_{t-1} + b_f)
@@ -44,7 +44,7 @@ class LSTM
 	It has two inputs `(c, x)` and two outputs `(c, h)`, where
 		`c` indicates the cell state.
 		`x` must have four times channels compared to the number of units. (concatenation of four weight matrices used in LSTM.
-
+```python
 	LSTM.forward(c_prev, x):
 		a, i, f, o = _extract_gates(x)
 			# these are the weight matrices, where
@@ -61,7 +61,7 @@ class LSTM
 	h = tanh(c) * sigmoid(o)
 
 	return (c,h)   # `h` is the output signal, `c` is the updated cell state.
-     
+```     
 ####-------------------------------------------------------------------------------------
   Example:
 	    Assume `y` is the current input signal, `c` is the previous cell state, and `h` is the previous output signal from an lstm function. (`y`, `c` and `h` have `n_units` channels). Most typical preparation of `x` is:
