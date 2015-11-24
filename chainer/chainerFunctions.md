@@ -65,13 +65,13 @@ class LSTM
 ####-------------------------------------------------------------------------------------
   Example:
 	    Assume `y` is the current input signal, `c` is the previous cell state, and `h` is the previous output signal from an lstm function. (`y`, `c` and `h` have `n_units` channels). Most typical preparation of `x` is:
-	 
+```python	 
 				>>> model = FunctionSet(w=F.Linear(n_units, 4 * n_units),
 				...                     v=F.Linear(n_units, 4 * n_units),
 				...                     ...)
 				>>> x = model.w(y) + model.v(h)    # this h is h_{t-1}
 				>>> c, h = F.lstm(c, x)            # this h is h_t
-
+```
 	It corresponds to calculate the input sources `a`,`i`,`f`,`o` from the current input `y` and the previous output `h`. Different parameters are used for different kind of input sources.
 
 
