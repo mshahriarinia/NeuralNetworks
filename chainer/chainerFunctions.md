@@ -1,13 +1,16 @@
    ######################################################################################
 
 `class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, initial_bias=None)`
-        The weight matrix `W` has shape `(out_size, in_size)`.
-        
-        - `Linear.forward(x)` returns `Y=XW^T+b`
-        - `Linear.backward(x,gy)`  where `gy` is gradient of `y`, it calculates gradientes, etc
 
-	Parameters:
-	```
+The weight matrix `W` has shape `(out_size, in_size)`.
+
+- `Linear.forward(x)` returns `Y=XW^T+b`
+
+- `Linear.backward(x,gy)`  where `gy` is gradient of `y`, it calculates gradientes, etc
+
+Parameters:
+
+```
 	    in_size ("int"): Dimension of input "vector".
 	    out_size (int): Dimension of output vector.
 	    wscale (float): Scaling factor of the weight matrix.
@@ -17,11 +20,12 @@
 	    initial_bias (1-D array): Initial bias value. If None, then this function uses to initialize bias.
 ```
         
-        It provides a funciton `linear(x, W, b)` to be used without class.
+It provides a funciton `linear(x, W, b)` to be used without class.
 
    ######################################################################################
 
 In an LSTM we have the following gates:
+
 ```latex
   i_t         = sigma(W_i* xt + U_i * h_{t-1} + b_i)
 	\tilde{C}_t =  tanh(W_C* xt + U_C * h_{t-1} + b_C)        # in Chainer terms \tilde{C}_t === a
