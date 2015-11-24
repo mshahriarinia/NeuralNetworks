@@ -1,3 +1,7 @@
+   ############################################################################################################################
+   ############################################################################################################################
+   ############################################################################################################################
+
 class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, initial_bias=None)
         The weight matrix W has shape (out_size, in_size).
         - Linear.forward(x) returns Y=XW^T+b
@@ -31,7 +35,10 @@ In an LSTM we have the following gates:
 
 ```
 
-So, in Chainer, we concatenate 
+So, in Chainer, we concatenate [W_i, W_C, W_f, W_o]  as 'w' in the Example 1 below, and concatenate [U_i, U_C, U_f, U_o] as 'v' in Example 1 below.
+				Then multiply 'w' to y (current input signal) and multiply 'v' to h (previous "output" signal)(same as above h_{t-1}). O.K.
+				Then feed them to LSTM to do the sigmas and tanhs and print out C_t and h_t.
+				NOTE: Chainer's implementation is missing the V_o * C_t term. No big deal just be mindful of that. It caused a bit of a confusion.		 	 	  
 
 class LSTM
 	It has two inputs (c, x) and two outputs (c, h), where
@@ -62,8 +69,8 @@ class LSTM
 				>>> model = FunctionSet(w=F.Linear(n_units, 4 * n_units),
 				...                     v=F.Linear(n_units, 4 * n_units),
 				...                     ...)
-				>>> x = model.w(y) + model.v(h)
-				>>> c, h = F.lstm(c, x)
+				>>> x = model.w(y) + model.v(h)    # this h is h_{t-1}
+				>>> c, h = F.lstm(c, x)            # this h is h_t
 
 	It corresponds to calculate the input sources a,i,f,o from the current input y and the previous output h. Different parameters are used for different kind of input sources.
 
