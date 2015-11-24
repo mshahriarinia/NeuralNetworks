@@ -1,11 +1,13 @@
    ######################################################################################
-```
-class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, initial_bias=None)
-        The weight matrix W has shape (out_size, in_size).
-        - Linear.forward(x) returns Y=XW^T+b
-        - Lienar.backward(x,gy)  where gy is gradient of y, it calculates gradientes, etc
+
+`class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, initial_bias=None)`
+        The weight matrix `W` has shape `(out_size, in_size)`.
+        
+        - `Linear.forward(x)` returns `Y=XW^T+b`
+        - `Linear.backward(x,gy)`  where `gy` is gradient of `y`, it calculates gradientes, etc
 
 	Parameters:
+	```
 	    in_size ("int"): Dimension of input "vector".
 	    out_size (int): Dimension of output vector.
 	    wscale (float): Scaling factor of the weight matrix.
@@ -13,9 +15,10 @@ class Linear(in_size, out_size, wscale=1, bias=0, nobias=False, initialW=None, i
 	    nobias (bool): If True, then this function does not use the bias.
 	    initialW (2-D array): Initial weight value. If None, then this function uses to initialize wscale.
 	    initial_bias (1-D array): Initial bias value. If None, then this function uses to initialize bias.
-
-        It provides a funciton linear(x, W, b) to be used without class.
 ```
+        
+        It provides a funciton `linear(x, W, b)` to be used without class.
+
    ######################################################################################
 
 In an LSTM we have the following gates:
