@@ -11,13 +11,13 @@ The weight matrix `W` has shape `(out_size, in_size)`.
 Parameters:
 
 ```
-	    in_size ("int"): Dimension of input "vector".
-	    out_size (int): Dimension of output vector.
-	    wscale (float): Scaling factor of the weight matrix.
-	    bias (float): Initial bias value.
-	    nobias (bool): If True, then this function does not use the bias.
-	    initialW (2-D array): Initial weight value. If None, then this function uses to initialize wscale.
-	    initial_bias (1-D array): Initial bias value. If None, then this function uses to initialize bias.
+in_size ("int"): Dimension of input "vector".
+out_size (int): Dimension of output vector.
+wscale (float): Scaling factor of the weight matrix.
+bias (float): Initial bias value.
+nobias (bool): If True, then this function does not use the bias.
+initialW (2-D array): Initial weight value. If None, then this function uses to initialize wscale.
+initial_bias (1-D array): Initial bias value. If None, then this function uses to initialize bias.
 ```
         
 It provides a funciton `linear(x, W, b)` to be used without class.
@@ -40,19 +40,19 @@ In an LSTM we have the following gates:
 
 So, in Chainer, we concatenate `[W_i, W_C, W_f, W_o]`  as `'w'` in the Example 1 below, and concatenate `[U_i, U_C, U_f, U_o]` as `'v'` in Example 1 below.
 				
-				Then multiply 'w' to y (current input signal) and multiply `'v'` to `h` (previous "output" signal)(same as above `h_{t-1}`). O.K.
+Then multiply 'w' to y (current input signal) and multiply `'v'` to `h` (previous "output" signal)(same as above `h_{t-1}`). O.K.
 				
-				Then feed them to LSTM to do the sigmas and tanhs and print out `C_t` and `h_t`.
+Then feed them to LSTM to do the sigmas and tanhs and print out `C_t` and `h_t`.
 				
-				NOTE: Chainer's implementation is missing the `V_o * C_t` term. No big deal just be mindful of that. It caused a bit of a confusion.		 	 	  
+NOTE: Chainer's implementation is missing the `V_o * C_t` term. No big deal just be mindful of that. It caused a bit of a confusion.		 	 	  
 
-class LSTM
+#class LSTM
 	
-	It has two inputs `(c, x)` and two outputs `(c, h)`, where
+It has two inputs `(c, x)` and two outputs `(c, h)`, where
 		
-		`c` indicates the cell state.
+`c` indicates the cell state.
 		
-		`x` must have four times channels compared to the number of units. (concatenation of four weight matrices used in LSTM.
+`x` must have four times channels compared to the number of units. (concatenation of four weight matrices used in LSTM.
 
 ```python
 	LSTM.forward(c_prev, x):
